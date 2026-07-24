@@ -8,6 +8,7 @@ export type OnboardingStep =
   | 'nickname'
   | 'self-assessment'
   | 'roadmap'
+  | 'quest-detail'
 
 export type CategoryId =
   | 'business'

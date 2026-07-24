@@ -14,9 +14,10 @@ interface RoadmapPageProps {
   customQuests: RoadmapQuest[]
   onAddQuest: (quest: RoadmapQuest) => void
   onOpenArchive: () => void
+  onOpenQuest: (quest: RoadmapQuest) => void
 }
 
-function RoadmapQuestCard({ quest }: { quest: RoadmapQuest }) {
+function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: RoadmapQuest) => void; quest: RoadmapQuest }) {
   const isLocked = quest.status === 'locked'
   const styles = {
     complete: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
@@ -33,10 +34,12 @@ function RoadmapQuestCard({ quest }: { quest: RoadmapQuest }) {
   }[quest.status]
 
   return (
-    <article
+    <button
       aria-disabled={isLocked}
       aria-label={isLocked ? `${quest.title} (잠김)` : quest.title}
-      className={`flex min-h-[75px] items-center justify-between rounded-[20px] border-[1.2px] p-4 ${styles}`}
+      className={`flex min-h-[75px] w-full items-center justify-between rounded-[20px] border-[1.2px] p-4 text-left transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3] ${styles} ${isLocked ? 'cursor-default' : 'cursor-pointer hover:-translate-y-px'}`}
+      onClick={() => onOpenQuest(quest)}
+      type="button"
     >
       <div className="flex min-w-0 items-center gap-3">
         <img
@@ -60,11 +63,11 @@ function RoadmapQuestCard({ quest }: { quest: RoadmapQuest }) {
         src={homeAssets.archiveSkillChevron}
         width={5.349}
       />
-    </article>
+    </button>
   )
 }
 
-export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive }: RoadmapPageProps) {
+export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive, onOpenQuest }: RoadmapPageProps) {
   const [isQuestFormOpen, setIsQuestFormOpen] = useState(false)
   const [questTitle, setQuestTitle] = useState('')
   const [questCategory, setQuestCategory] = useState(competencyMetrics[0].label)
@@ -243,7 +246,7 @@ export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive
               </div>
               <div className="flex flex-col gap-2.5">
                 {group.quests.map((quest) => (
-                  <RoadmapQuestCard key={quest.id} quest={quest} />
+                  <RoadmapQuestCard key={quest.id} onOpenQuest={onOpenQuest} quest={quest} />
                 ))}
               </div>
             </section>

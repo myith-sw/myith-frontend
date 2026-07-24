@@ -5,6 +5,7 @@ import { EggSelectionHome } from './components/EggSelectionHome'
 import { JobSelection } from './components/JobSelection'
 import { ArchivePage } from './components/ArchivePage'
 import { MythHub } from './components/MythHub'
+import { QuestDetailPage } from './components/QuestDetailPage'
 import { RoadmapPage } from './components/RoadmapPage'
 import { SelfAssessment } from './components/SelfAssessment'
 import { Sidebar } from './components/Sidebar'
@@ -38,6 +39,7 @@ function App() {
     id: mythCharacters[0].id,
   })
   const [customQuestsByRoadmap, setCustomQuestsByRoadmap] = useState<Record<string, RoadmapQuest[]>>({})
+  const [activeQuest, setActiveQuest] = useState<RoadmapQuest | null>(null)
   const selectedJob = selectedJobId ? availableJobs.find((job) => job.id === selectedJobId) ?? null : null
   const openArchive = (characterId: string) => {
     setActiveCharacterId(characterId)
@@ -52,6 +54,10 @@ function App() {
     setActiveCharacterId(characterId)
     setRoadmapTarget({ kind: 'existing', id: characterId })
     setStep('roadmap')
+  }
+  const openQuest = (quest: RoadmapQuest) => {
+    setActiveQuest(quest)
+    setStep('quest-detail')
   }
 
   if (step === 'hub') {
@@ -72,6 +78,17 @@ function App() {
           onCreateCharacter={() => setStep('egg')}
           onOpenRoadmap={openRoadmap}
           onOpenArchive={openArchive}
+          onOpenQuest={(character) => {
+            setActiveCharacterId(character.id)
+            setRoadmapTarget({ kind: 'existing', id: character.id })
+            openQuest({
+              id: `next-${character.id}`,
+              level: character.level,
+              category: '다음 퀘스트',
+              status: 'open',
+              title: character.nextQuest,
+            })
+          }}
         />
       </AppShell>
     )
@@ -135,6 +152,45 @@ function App() {
           }}
           skillGroups={isDraftArchive ? draftArchiveSkillGroups : undefined}
         />
+      </AppShell>
+    )
+  }
+
+  if (step === 'quest-detail') {
+    const isDraftQuest = roadmapTarget.kind === 'draft'
+    const selectedExistingCharacter =
+      roadmapTarget.kind === 'existing'
+        ? mythCharacters.find(({ id }) => id === roadmapTarget.id) ?? mythCharacters[0]
+        : mythCharacters[0]
+    const selectedJobForQuest = selectedJob ?? digitalMarketer
+    const fallbackQuest = getRoadmapQuestGroups(customQuestsByRoadmap[isDraftQuest ? 'draft' : selectedExistingCharacter.id] ?? [])
+      .flatMap((group) => group.quests)
+      .find((quest) => quest.status !== 'locked')
+    const quest = activeQuest ?? fallbackQuest ?? getRoadmapQuestGroups()[0].quests[0]
+
+    return (
+      <AppShell
+        sidebar={
+          isDraftQuest ? (
+            <Sidebar
+              draftCharacter={{ title: nickname, role: selectedJobForQuest.title, level: 1 }}
+              onCreateCharacter={() => setStep('egg')}
+              onHome={() => setStep('hub')}
+              variant="draft"
+            />
+          ) : (
+            <Sidebar
+              activeCharacterId={selectedExistingCharacter.id}
+              characters={mythCharacters}
+              onCreateCharacter={() => setStep('egg')}
+              onHome={() => setStep('hub')}
+              onSelectCharacter={openRoadmap}
+            />
+          )
+        }
+        variant="quest"
+      >
+        <QuestDetailPage onBack={() => setStep('roadmap')} quest={quest} />
       </AppShell>
     )
   }
@@ -257,6 +313,7 @@ function App() {
             }
             openArchive(selectedExistingCharacter.id)
           }}
+          onOpenQuest={openQuest}
         />
       </AppShell>
     )

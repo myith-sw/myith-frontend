@@ -7,15 +7,17 @@ interface MythHubProps {
   onCreateCharacter: () => void
   onOpenRoadmap: (characterId: string) => void
   onOpenArchive: (characterId: string) => void
+  onOpenQuest: (character: MythCharacter) => void
 }
 
 interface MythCardProps {
   character: MythCharacter
   onOpenRoadmap: (characterId: string) => void
   onOpenArchive: (characterId: string) => void
+  onOpenQuest: (character: MythCharacter) => void
 }
 
-function MythCard({ character, onOpenRoadmap, onOpenArchive }: MythCardProps) {
+function MythCard({ character, onOpenRoadmap, onOpenArchive, onOpenQuest }: MythCardProps) {
   return (
     <article className="flex flex-col gap-[6px]">
       <div className="rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#fefefe] p-[10px]">
@@ -58,7 +60,11 @@ function MythCard({ character, onOpenRoadmap, onOpenArchive }: MythCardProps) {
 
           <div className="flex items-center justify-between py-2.5">
             <span className="text-xs font-medium tracking-[-0.24px] opacity-50">다음 퀘스트</span>
-            <span className="flex items-center gap-2 text-sm font-medium tracking-[-0.28px] opacity-70">
+            <button
+              className="flex items-center gap-2 text-sm font-medium tracking-[-0.28px] opacity-70 transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
+              onClick={() => onOpenQuest(character)}
+              type="button"
+            >
               {character.nextQuest}
               <img
                 alt=""
@@ -68,7 +74,7 @@ function MythCard({ character, onOpenRoadmap, onOpenArchive }: MythCardProps) {
                 src={homeAssets.nextQuestChevron}
                 width={5.349}
               />
-            </span>
+            </button>
           </div>
         </div>
       </div>
@@ -111,7 +117,7 @@ function MythCard({ character, onOpenRoadmap, onOpenArchive }: MythCardProps) {
   )
 }
 
-export function MythHub({ characters, onCreateCharacter, onOpenRoadmap, onOpenArchive }: MythHubProps) {
+export function MythHub({ characters, onCreateCharacter, onOpenRoadmap, onOpenArchive, onOpenQuest }: MythHubProps) {
   return (
     <section className="w-full">
       <header className="flex items-center justify-between pl-[11px]">
@@ -140,7 +146,13 @@ export function MythHub({ characters, onCreateCharacter, onOpenRoadmap, onOpenAr
 
       <div className="mt-[30px] grid grid-cols-2 gap-x-4 gap-y-1.5">
         {characters.map((character) => (
-          <MythCard character={character} key={character.id} onOpenArchive={onOpenArchive} onOpenRoadmap={onOpenRoadmap} />
+          <MythCard
+            character={character}
+            key={character.id}
+            onOpenArchive={onOpenArchive}
+            onOpenQuest={onOpenQuest}
+            onOpenRoadmap={onOpenRoadmap}
+          />
         ))}
       </div>
     </section>
