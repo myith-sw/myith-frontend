@@ -2,6 +2,10 @@
 
 Vite + React + TypeScript + Tailwind CSS 기반의 캐릭터 에셋 프로젝트입니다.
 
+## Documentation
+
+- [백엔드 연동 및 API 명세](docs/BACKEND_API_SPEC.md)
+
 ## Assets
 
 - Figma 노드 `13:408`에서 실제 export한 22종 × 4단계, 총 88개의 75×75 투명 PNG
