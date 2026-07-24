@@ -400,6 +400,465 @@ interface QuestDetail extends QuestSummary {
 | `GET` | `/characters/{characterId}/archive/export` | MD/PDF 내보내기 |
 | `GET` | `/health` | 배포 상태 확인 |
 
+### 7.1 화면에서 API key를 읽는 방법
+
+아래 표의 `JSON key`는 서버 응답 또는 요청 본문에서 실제로 사용하는 경로다.
+
+- `data[]`: 배열의 각 항목
+- `character.id`: character 객체 안의 id
+- `groups[].quests[]`: 각 level 그룹 안의 퀘스트 항목
+- **직접 표시**: 화면에 글자·이미지·수치로 보임
+- **동작에 사용**: 화면에는 안 보이지만 클릭, 조회, 저장에 필요
+- **서버 전용**: FE 화면에는 표시하지 않고 검증·운영에 사용
+
+### 7.2 공통 응답 key
+
+#### 성공 응답
+
+| JSON key | 화면에서의 의미 |
+| --- | --- |
+| `data` | 화면에 표시할 실제 데이터 전체 |
+| `meta` | 다음 페이지 존재 여부 등 목록 제어 정보 |
+| `meta.nextCursor` | 경험 카드 목록에서 다음 페이지를 요청할 때 보내는 값 |
+| `meta.hasNext` | 경험 카드를 더 불러올 수 있는지 결정 |
+
+#### 오류 응답
+
+| JSON key | 화면에서의 의미 |
+| --- | --- |
+| `error.code` | FE가 오류 종류를 구분하는 고정값. 예: `QUEST_LOCKED` |
+| `error.message` | toast, 오류 문구, 모달에 표시할 사용자용 메시지 |
+| `error.fieldErrors` | 닉네임·STAR 입력칸 아래에 표시할 필드별 오류 |
+| `error.requestId` | 화면에는 표시하지 않고 장애 문의와 서버 로그 추적에 사용 |
+| `meta.retryAfterSeconds` | AI 요청 제한 시 “30초 후 다시 시도” 문구와 버튼 잠금 시간 |
+
+### 7.3 앱 시작·사용자 key 매핑
+
+#### `POST /auth/guest`
+
+이 API는 화면을 그리기보다 현재 브라우저의 데이터를 어느 사용자 소유로 저장할지 결정한다.
+
+| JSON key | 화면 대응 | 사용 방식 |
+| --- | --- | --- |
+| `data.userId` | 직접 표시하지 않음 | 이후 캐릭터·로드맵의 소유자 식별 |
+| `data.type` | 직접 표시하지 않음 | `guest`인지 정식 회원인지 구분 |
+| `data.createdAt` | 직접 표시하지 않음 | 서버 운영·계정 생성 시점 확인 |
+| 응답 cookie | 직접 표시하지 않음 | 이후 API 요청에서 같은 사용자를 식별 |
+
+#### `GET /me`
+
+| JSON key | 화면 대응 | 사용 방식 |
+| --- | --- | --- |
+| `data.id` | 직접 표시하지 않음 | 현재 세션이 유효한지 확인 |
+| `data.type` | 직접 표시하지 않음 | 추후 로그인 유도 UI 분기 |
+
+### 7.4 새 캐릭터 만들기 key 매핑
+
+#### egg 선택 화면 — `GET /catalog/eggs`
+
+화면 예시: 터르트·미거·소옹어 egg 세 개가 보이는 첫 화면.
+
+| JSON key | 화면 대응 | 예시 |
+| --- | --- | --- |
+| `data[].id` | 어떤 egg가 선택됐는지 저장하고 로컬 이미지와 연결 | `teoreuteu` → `teoreuteu-1.png` |
+| `data[].name` | 접근성 문구 또는 추후 egg 이름 표시 | `터르트` |
+| `data[].enabled` | 선택 가능 여부. `false`면 숨김 또는 준비중 처리 | `true` |
+
+egg 그림 자체는 서버에서 받지 않는다. `id`에 대응하는 이미지를 FE 로컬 에셋에서 표시한다.
+
+#### 분야 칩 — `GET /catalog/job-categories`
+
+화면 예시: `경영·사무`, `금융·회계`, `광고·마케팅`, `IT` 등의 상단 칩.
+
+| JSON key | 화면 대응 | 예시 |
+| --- | --- | --- |
+| `data[].id` | 클릭한 분야를 식별하고 직무 목록 조회에 사용 | `marketing` |
+| `data[].label` | 칩 내부에 보이는 문구 | `광고·마케팅` |
+| `data[].sortOrder` | 칩이 왼쪽에서 오른쪽으로 표시되는 순서 | `4` |
+
+분야 아이콘은 category `id`와 FE 로컬 SVG를 연결해서 표시한다.
+
+#### 직무 카드 — `GET /catalog/jobs?categoryId=marketing`
+
+화면 예시: `디지털 마케터`, `브랜드 마케터`, `콘텐츠 마케터` 카드.
+
+| JSON key | 화면 대응 | 예시 |
+| --- | --- | --- |
+| `data[].id` | 카드 클릭 후 선택 직무를 식별 | `digital-marketer` |
+| `data[].categoryId` | 카드가 어느 분야 칩에 속하는지 결정 | `marketing` |
+| `data[].title` | 카드 제목과 다음 화면의 선택 직무명 | `디지털 마케터` |
+| `data[].description` | 카드 제목 아래 한 줄 설명 | `콘텐츠와 데이터로 고객을 움직인다` |
+| `data[].skills[]` | 카드 하단의 역량·기술 chip 목록 | `콘텐츠 기획`, `데이터 분석` |
+| `data[].enabled` | 클릭 가능 여부. `false`면 준비중 카드 스타일 | `true` |
+
+#### 선택 직무 상세 — `GET /catalog/jobs/{jobId}`
+
+닉네임 입력 화면과 이후 로드맵 프로필에서 사용한다.
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.id` | 선택 직무 ID 유지 |
+| `data.categoryId` | 선택된 분야 칩을 활성화 |
+| `data.title` | 선택 카드 제목, 자가진단 설명, 사이드바 직무명 |
+| `data.description` | 로드맵 상단 캐릭터 설명 |
+| `data.skills[]` | 선택 카드의 skill chip |
+| `data.enabled` | 비활성 직무로 진입했는지 검증 |
+
+#### 자가진단 — `GET /catalog/jobs/{jobId}/assessment`
+
+화면 예시: 문항마다 `모름 / 들어봄 / 해봄 / 혼자 가능`을 선택하는 화면.
+
+| JSON key | 화면 대응 | 예시 |
+| --- | --- | --- |
+| `data.jobId` | 어느 직무의 자가진단인지 확인 | `backend-developer` |
+| `data.version` | 질문이 변경된 경우 어떤 버전에 답했는지 저장 | `1` |
+| `data.questions[].id` | 사용자가 선택한 답을 문항과 연결 | `rest-api` |
+| `data.questions[].prompt` | 각 회색 자가진단 카드 제목 | `REST API 서버를 구현한다` |
+| `data.questions[].competencyKey` | 답변을 어떤 역량 점수에 반영할지 결정 | `serverApi` |
+| `data.questions[].sortOrder` | 문항의 위아래 표시 순서 | `6` |
+| `data.levels[].id` | 서버에 전송하는 안정적인 답변 값 | `unknown` |
+| `data.levels[].label` | 버튼에 보이는 문구 | `모름` |
+| `data.levels[].score` | 초기 역량 계산에 사용할 점수 | `0` |
+
+#### 캐릭터 생성 요청 — `POST /characters`
+
+이 요청은 사용자가 앞 화면들에서 선택·입력한 값을 서버에 보내는 작업이다.
+
+| 요청 key | 사용자가 입력한 화면 값 | 예시 |
+| --- | --- | --- |
+| `nickname` | 닉네임 입력칸 | `견습 서버 개발자` |
+| `jobId` | 클릭한 직무 카드의 `id` | `backend-developer` |
+| `eggId` | 클릭한 egg의 `id` | `teoreuteu` |
+| `assessmentVersion` | 자가진단 API가 내려준 version | `1` |
+| `assessmentAnswers[]` | 모든 자가진단 선택 결과 | 문항별 답변 배열 |
+| `assessmentAnswers[].questionId` | 해당 자가진단 문항 | `rest-api` |
+| `assessmentAnswers[].level` | 사용자가 누른 답변 | `unknown` |
+
+캐릭터 생성 응답:
+
+| 응답 key | 생성 직후 화면 대응 |
+| --- | --- |
+| `data.character` | 생성된 캐릭터의 사이드바 카드와 로드맵 상단 전체 |
+| `data.character.id` | 이후 로드맵·아카이브·퀘스트 요청에 사용할 캐릭터 ID |
+| `data.character.nickname` | 사이드바와 로드맵의 캐릭터 이름 |
+| `data.character.job.id` | 직무 식별 |
+| `data.character.job.title` | 사이드바 직무명 |
+| `data.character.spriteId` | 어떤 캐릭터 이미지를 표시할지 결정 |
+| `data.character.level` | `Lv.1` 배지 |
+| `data.character.stage` | `spriteId-stage.png`의 stage 번호 |
+| `data.character.stageLabel` | `입문 단계` 문구 |
+| `data.character.description` | 로드맵 상단 직무 설명 |
+| `data.character.progress` | 진행률 숫자와 progress bar 너비 |
+| `data.character.completedQuestCount` | 아카이브 상단의 `완료 N개` |
+| `data.character.nextQuest.id` | 다음 퀘스트 클릭 시 상세 조회에 사용 |
+| `data.character.nextQuest.title` | 허브 카드의 `다음 퀘스트` 문구 |
+| `data.character.competencies` | 아카이브 역량 다각형의 초기 점수 |
+| `data.character.createdAt` | 직접 표시하지 않음 |
+| `data.character.updatedAt` | 캐시 갱신·동시성 확인 |
+| `data.roadmapId` | 생성된 로드맵 식별. 직접 표시하지 않음 |
+
+### 7.5 신화 허브·사이드바 key 매핑
+
+#### `GET /characters`
+
+응답 배열의 캐릭터 한 개가 신화 허브 카드 한 장과 사이드바의 한 행에 대응한다.
+
+| JSON key | 신화 허브 카드 | 사이드바 |
+| --- | --- | --- |
+| `data[].id` | 로드맵·아카이브·다음 퀘스트 클릭 대상 | 해당 캐릭터 선택 대상 |
+| `data[].nickname` | 카드의 큰 제목 `견습 서버 개발자` | 첫 번째 줄 캐릭터 이름 |
+| `data[].job.id` | 화면에는 표시하지 않음 | 화면에는 표시하지 않음 |
+| `data[].job.title` | 필요하면 직무 표시 | 두 번째 줄 `백엔드 개발자` |
+| `data[].spriteId` | 캐릭터 이미지 종류 | 사용하지 않음 |
+| `data[].level` | `Lv.4` 배지 | 오른쪽 `Lv.4` 배지 |
+| `data[].stage` | `deokbaseu-4.png`의 `4` | 사용하지 않음 |
+| `data[].stageLabel` | `전설 단계` 문구 | 사용하지 않음 |
+| `data[].description` | `서버, API, DB로...` 설명 | 사용하지 않음 |
+| `data[].progress` | `80%`와 검은 진행률 bar | 사용하지 않음 |
+| `data[].completedQuestCount` | 현재 카드에서는 직접 표시하지 않음 | 사용하지 않음 |
+| `data[].nextQuest.id` | 다음 퀘스트 버튼 클릭 시 상세 페이지 조회 | 사용하지 않음 |
+| `data[].nextQuest.title` | `REST API 구조 이해하기` 문구 | 사용하지 않음 |
+| `data[].competencies` | 허브에서는 사용하지 않음 | 사용하지 않음 |
+| `data[].createdAt` | 직접 표시하지 않음 | 직접 표시하지 않음 |
+| `data[].updatedAt` | 캐시 갱신에 사용 | 캐시 갱신에 사용 |
+
+`nextQuest=null`이면 허브 카드에 `모든 퀘스트 완료` 또는 제품에서 정한 빈 상태를 표시한다.
+
+#### `GET /characters/{characterId}`
+
+목록에서 캐릭터 하나만 다시 조회할 때 사용한다.
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.id` | 현재 선택된 캐릭터 |
+| `data.nickname` | 현재 페이지 제목 |
+| `data.job` | 직무명과 직무 ID |
+| `data.spriteId`, `data.stage` | 상단 캐릭터 이미지 |
+| `data.level`, `data.stageLabel` | Lv. 배지와 단계 문구 |
+| `data.description` | 캐릭터 옆 설명 |
+| `data.progress` | 진행률 |
+| `data.completedQuestCount` | 완료 개수 |
+| `data.nextQuest` | 다음 퀘스트 |
+| `data.competencies` | 역량 점수 |
+
+MVP에서는 `/characters` 목록 응답에 위 정보가 모두 있으면 이 단일 조회를 생략할 수 있다.
+
+### 7.6 로드맵 화면 key 매핑
+
+#### `GET /characters/{characterId}/roadmap`
+
+로드맵 상단:
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.id` | 현재 로드맵 ID. 화면에는 표시하지 않음 |
+| `data.templateVersion` | 사용한 로드맵 템플릿 버전. 화면에는 표시하지 않음 |
+| `data.character.id` | 아카이브·퀘스트 요청 대상 |
+| `data.character.nickname` | 상단 캐릭터 이름 |
+| `data.character.jobTitle` | 사이드바 직무명 |
+| `data.character.description` | 이름 오른쪽 설명 |
+| `data.character.spriteId` | 상단 대형 캐릭터 이미지 종류 |
+| `data.character.level` | 상단 `Lv.4` 배지 |
+| `data.character.stage` | 캐릭터 이미지 stage |
+| `data.character.stageLabel` | `전설 단계` 문구 |
+| `data.character.progress` | `80%`와 진행률 bar |
+
+로드맵 퀘스트 목록:
+
+| JSON key | 화면 대응 | 예시 |
+| --- | --- | --- |
+| `data.groups[].level` | 구분선 왼쪽 `Lv.1`, `Lv.2` | `1` |
+| `data.groups[].label` | level 옆 `입문 단계` | `입문 단계` |
+| `data.groups[].quests[]` | 해당 level 아래의 카드 목록 | 2개 카드 |
+| `quests[].id` | 카드 클릭 시 퀘스트 상세 조회 | `quest_environment` |
+| `quests[].level` | 상세 페이지 Lv. 배지 | `1` |
+| `quests[].competencyKey` | 서버 계산과 아이콘/색상 분기 | `programming` |
+| `quests[].categoryLabel` | 카드의 작은 분류 문구 | `프로그래밍 기초` |
+| `quests[].title` | 카드의 큰 제목 | `개발환경을 구축할 수 있다` |
+| `quests[].status` | 카드 색·아이콘·잠금 여부 | `complete` |
+| `quests[].isCustom` | 사용자가 추가한 퀘스트인지 구분 | `false` |
+| `quests[].order` | 같은 level 안에서 카드 표시 순서 | `1` |
+| `data.updatedAt` | 로드맵 캐시 갱신 | ISO 시간 |
+
+status와 화면 스타일:
+
+| status | 화면 카드 |
+| --- | --- |
+| `complete` | 청록 배경과 완료 check 아이콘 |
+| `pending` | 연한 주황 배경과 진행중 아이콘 |
+| `open` | 클릭 가능한 기본 카드 |
+| `locked` | 회색 카드와 lock 아이콘 |
+
+#### 퀘스트 추가 요청 — `POST /characters/{characterId}/quests`
+
+| 요청 key | “나만의 퀘스트 추가” 입력 UI |
+| --- | --- |
+| `title` | 퀘스트 제목 input |
+| `level` | `레벨 1~6` select |
+| `competencyKey` | `역량 분류` select |
+
+응답의 `id`, `status`, `order`는 서버가 결정하고, 성공 후 해당 level 목록에 새 카드를 추가한다.
+
+### 7.7 퀘스트 상세·STAR·AI key 매핑
+
+#### 퀘스트 상세 — `GET /quests/{questId}`
+
+상단 기본 정보:
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.id` | 현재 퀘스트 ID. 저장·AI·완료 요청에 사용 |
+| `data.level` | 상단 `Lv.5 전설 단계` 배지 |
+| `data.competencyKey` | 역량 계산용 고정 key |
+| `data.categoryLabel` | 상단 분류 배지 `CS·자료구조` |
+| `data.title` | 페이지 큰 제목 |
+| `data.status` | 잠긴 퀘스트의 입력·버튼 비활성화 |
+| `data.isCustom` | 사용자 추가 퀘스트 여부 |
+| `data.order` | 로드맵 복귀 후 카드 순서 |
+| `data.completionCriteria` | `완료 기준` 카드 내용 |
+| `data.ncsReferences[]` | `NCS 능력단위 근거` 카드 데이터 |
+| `ncsReferences[].code` | NCS 코드 |
+| `ncsReferences[].name` | 화면에 표시할 NCS 명칭 |
+| `ncsReferences[].url` | NCS 외부 상세 링크가 생길 경우 사용 |
+| `data.recommendedCertificates[]` | `추천 자격` 카드 데이터 |
+| `recommendedCertificates[].id` | 자격증 식별 |
+| `recommendedCertificates[].name` | 화면에 표시할 자격증 이름 |
+
+STAR 입력 영역:
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.record.situation` | `상황 (Situation)` textarea |
+| `data.record.task` | `과제 (Task)` textarea |
+| `data.record.action` | `행동 (Action)` textarea |
+| `data.record.result` | `결과 (Result)` textarea |
+| `data.recordSource` | 마지막 기록이 직접 작성인지 AI 적용인지 구분 |
+| `data.updatedAt` | 저장된 최신 버전 확인 |
+
+`record=null`이면 네 textarea를 빈 값으로 시작한다.
+
+#### STAR 임시 저장 — `PUT /quests/{questId}/record`
+
+| 요청 key | 화면에서 보내는 값 |
+| --- | --- |
+| `record.situation` | 상황 textarea 현재 값 |
+| `record.task` | 과제 textarea 현재 값 |
+| `record.action` | 행동 textarea 현재 값 |
+| `record.result` | 결과 textarea 현재 값 |
+| `source` | 직접 작성이면 `manual`, AI 적용 후면 `ai-assisted` |
+| `aiEnhancementId` | 적용한 AI 응답의 ID. 직접 작성이면 `null` |
+
+저장 응답:
+
+| 응답 key | 화면 동작 |
+| --- | --- |
+| `data.questId` | 현재 저장한 퀘스트 확인 |
+| `data.record` | 서버에 실제 저장된 textarea 값으로 동기화 |
+| `data.source` | AI 적용 여부 유지 |
+| `data.status` | 처음 기록하면 카드 상태를 `pending`으로 갱신 |
+| `data.updatedAt` | 마지막 저장 시간 또는 저장 완료 상태 관리 |
+
+#### AI 보완 요청 — `POST /quests/{questId}/ai-enhancements`
+
+| 요청 key | “AI로 강화하기” 모달 대응 |
+| --- | --- |
+| `record.situation` | 모달 왼쪽 S `직접 쓴 글` |
+| `record.task` | 모달 왼쪽 T `직접 쓴 글` |
+| `record.action` | 모달 왼쪽 A `직접 쓴 글` |
+| `record.result` | 모달 왼쪽 R `직접 쓴 글` |
+| `locale` | 한국어 결과 요청. 기본 `ko-KR` |
+| `style` | 결과 문체. 기본 `concise-professional` |
+
+AI 응답:
+
+| 응답 key | 모달 화면 대응 |
+| --- | --- |
+| `data.id` | 사용자가 결과를 적용했을 때 함께 저장할 `aiEnhancementId` |
+| `data.questId` | 어떤 퀘스트의 결과인지 확인 |
+| `data.enhancedRecord.situation` | 모달 오른쪽 S `AI로 보완한 글` |
+| `data.enhancedRecord.task` | 모달 오른쪽 T `AI로 보완한 글` |
+| `data.enhancedRecord.action` | 모달 오른쪽 A `AI로 보완한 글` |
+| `data.enhancedRecord.result` | 모달 오른쪽 R `AI로 보완한 글` |
+| `data.provider` | 화면에는 표시하지 않음. 비용·운영 로그용 |
+| `data.model` | 화면에는 표시하지 않음. 결과 재현·운영용 |
+| `data.createdAt` | 화면에는 표시하지 않음. 요청 이력용 |
+
+사용자가 `AI 보완 내용으로 적용하기`를 누르면 `enhancedRecord`의 네 값을 원래 textarea 네 개에 넣는다.
+
+#### 퀘스트 완료 — `POST /quests/{questId}/complete`
+
+완료 요청:
+
+| 요청 key | 화면에서 보내는 값 |
+| --- | --- |
+| `record` | 완료 시점의 S/T/A/R 최종 내용 |
+| `source` | `manual` 또는 `ai-assisted` |
+| `aiEnhancementId` | AI 결과를 적용했다면 해당 ID |
+
+완료 응답:
+
+| 응답 key | 완료 후 바뀌는 화면 |
+| --- | --- |
+| `data.quest.id` | 완료된 로드맵 카드 식별 |
+| `data.quest.status` | 카드를 `complete` 청록 상태로 변경 |
+| `data.quest.completedAt` | 완료 시간. 현재 화면에는 직접 표시하지 않음 |
+| `data.characterChanges.level` | 사이드바·허브·로드맵 Lv. 배지 |
+| `data.characterChanges.stage` | 변경된 캐릭터 이미지 단계 |
+| `data.characterChanges.stageLabel` | 변경된 단계 문구 |
+| `data.characterChanges.progress` | 허브·로드맵 진행률 숫자와 bar |
+| `data.characterChanges.completedQuestCount` | 아카이브의 `완료 N개` |
+| `data.characterChanges.competencies` | 역량 다각형과 하단 퍼센트 |
+| `data.characterChanges.nextQuest.id` | 다음 퀘스트 클릭 대상 |
+| `data.characterChanges.nextQuest.title` | 허브의 다음 퀘스트 문구 |
+| `data.unlockedQuestIds[]` | 회색 lock 카드를 open 카드로 갱신 |
+| `data.experienceCardId` | 새로 생성된 경험 카드 식별 |
+
+### 7.8 아카이브 화면 key 매핑
+
+#### 역량 다각형·스킬 트리 — `GET /characters/{characterId}/archive`
+
+아카이브 상단:
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.character.id` | 현재 아카이브 캐릭터 |
+| `data.character.nickname` | 아카이브 제목 |
+| `data.character.jobTitle` | 제목 아래 직무명 |
+| `data.character.level` | 제목 아래 `Lv.4` |
+| `data.character.progress` | 제목 아래 `진행률 80%` |
+| `data.character.completedQuestCount` | 제목 아래 `완료 7개` |
+
+역량 다각형:
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.competencies.programming` | 프로그래밍 기초 꼭짓점과 하단 퍼센트 |
+| `data.competencies.computerScience` | CS·자료구조 꼭짓점과 퍼센트 |
+| `data.competencies.database` | 데이터베이스 꼭짓점과 퍼센트 |
+| `data.competencies.serverApi` | 서버·API 꼭짓점과 퍼센트 |
+| `data.competencies.collaboration` | 협업·형상관리 꼭짓점과 퍼센트 |
+| `data.competencies.deployment` | 배포·운영 꼭짓점과 퍼센트 |
+
+각 값이 클수록 다각형의 해당 방향 꼭짓점이 바깥쪽으로 이동한다.
+
+스킬 트리:
+
+| JSON key | 화면 대응 |
+| --- | --- |
+| `data.skillGroups[].level` | `Lv.1`, `Lv.2` 구분선 |
+| `data.skillGroups[].label` | `입문 단계`, `견습 단계` |
+| `data.skillGroups[].skills[]` | 단계 아래 스킬 카드 목록 |
+| `skills[].questId` | 추후 스킬 카드 클릭 시 퀘스트 연결 |
+| `skills[].competencyKey` | 역량 식별 |
+| `skills[].categoryLabel` | 카드의 작은 분류 문구 |
+| `skills[].title` | 카드의 큰 제목 |
+| `skills[].status` | 카드 색과 완료·진행·잠금 아이콘 |
+| `data.updatedAt` | 아카이브 최신 상태 확인 |
+
+#### 경험 카드 — `GET /characters/{characterId}/experiences`
+
+응답 배열 한 항목이 화면 하단 경험 카드 한 장에 대응한다.
+
+| JSON key | 경험 카드 대응 |
+| --- | --- |
+| `data[].id` | 경험 카드 식별. 화면에는 표시하지 않음 |
+| `data[].questId` | 원본 퀘스트 식별 |
+| `data[].competencyKey` | 역량별 필터 기능에 사용 가능 |
+| `data[].categoryLabel` | 카드 상단 chip `프로그래밍 기초` |
+| `data[].title` | 카드 제목 `언어 기초로 토이앱을 만든다` |
+| `data[].record.situation` | 카드의 S 한 줄 |
+| `data[].record.task` | 카드의 T 한 줄 |
+| `data[].record.action` | 카드의 A 한 줄 |
+| `data[].record.result` | 카드의 R 한 줄 |
+| `data[].createdAt` | 추후 날짜 표시·정렬에 사용 |
+| `meta.nextCursor` | 다음 경험 카드 페이지 요청 |
+| `meta.hasNext` | 더보기 버튼 또는 무한 스크롤 여부 |
+
+#### MD/PDF 내보내기 — `GET /characters/{characterId}/archive/export`
+
+이 endpoint는 JSON 데이터를 받는 것이 아니라 파일을 받는다.
+
+| 요청/응답 값 | 화면 대응 |
+| --- | --- |
+| `characterId` | 현재 보고 있는 캐릭터 |
+| `format=md` | `MD 내보내기` 버튼 |
+| `format=pdf` | `PDF 내보내기` 버튼 |
+| 응답 파일 body | 브라우저가 다운로드할 실제 MD 또는 PDF |
+| `Content-Disposition` | 다운로드 파일명 |
+| `Content-Type` | MD인지 PDF인지 브라우저가 판단 |
+
+### 7.9 화면에 직접 보이지 않는 운영 API
+
+#### `GET /health`
+
+| JSON key | 사용 방식 |
+| --- | --- |
+| `status` | 서버 정상 여부. 배포·모니터링에서 사용 |
+| `version` | 현재 배포된 BE 버전 |
+| `time` | 서버 시간과 상태 확인 |
+
+이 데이터는 일반 사용자 화면에는 표시하지 않는다.
+
 ## 8. 직무·온보딩 API
 
 ### 8.1 `GET /api/v1/catalog/eggs`
