@@ -98,7 +98,7 @@ export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive
           <CharacterSprite
             alt={`${character.name} 캐릭터`}
             characterId={character.characterId}
-            size={102}
+            size={289}
             stage={character.stage}
           />
         </div>
