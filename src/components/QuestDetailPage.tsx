@@ -51,7 +51,7 @@ export function QuestDetailPage({ onBack, quest }: QuestDetailPageProps) {
         onClick={onBack}
         type="button"
       >
-        <img alt="" aria-hidden="true" className="h-2.5 w-[11.6px]" src={homeAssets.archiveBackArrow} />
+        <img alt="" aria-hidden="true" className="h-2.5 w-[11.6px] rotate-180" src={homeAssets.archiveBackArrow} />
         로드맵으로
       </button>
 

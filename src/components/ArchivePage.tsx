@@ -118,7 +118,7 @@ export function ArchivePage({
             <img
               alt=""
               aria-hidden="true"
-              className="h-2.5 w-[11.6px]"
+              className="h-2.5 w-[11.6px] rotate-180"
               height={10}
               src={homeAssets.archiveBackArrow}
               width={11.6}
