@@ -45,7 +45,7 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
         <img
           alt=""
           aria-hidden="true"
-          className="size-10 shrink-0 object-contain"
+          className={`size-10 shrink-0 ${isLocked ? 'object-bottom' : 'object-contain'}`}
           height={40}
           src={statusIcon}
           width={40}
@@ -58,7 +58,7 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
       <img
         alt=""
         aria-hidden="true"
-        className={`ml-3 h-[9.726px] w-[5.349px] shrink-0 ${isLocked ? 'opacity-30' : ''}`}
+        className="ml-3 h-[9.726px] w-[5.349px] shrink-0"
         height={9.726}
         src={homeAssets.archiveSkillChevron}
         width={5.349}
