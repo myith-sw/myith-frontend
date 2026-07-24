@@ -4,14 +4,19 @@ import {
   clampCompetencyScore,
   competencyMetrics,
   experienceEntries,
+  type ArchiveCharacter,
+  type ArchiveExperienceEntry,
   type ArchiveSkill,
+  type ArchiveSkillGroup,
 } from '../data/archive'
-import type { MythCharacter } from '../data/home'
 import { CompetencyRadar } from './CompetencyRadar'
 
 interface ArchivePageProps {
-  character: MythCharacter
+  character: ArchiveCharacter
+  completedCount?: number
+  experiences?: ArchiveExperienceEntry[]
   onOpenRoadmap: () => void
+  skillGroups?: ArchiveSkillGroup[]
 }
 
 function SkillCard({ skill }: { skill: ArchiveSkill }) {
@@ -67,7 +72,7 @@ function SkillCard({ skill }: { skill: ArchiveSkill }) {
   )
 }
 
-function ExperienceCard({ entry }: { entry: (typeof experienceEntries)[number] }) {
+function ExperienceCard({ entry }: { entry: ArchiveExperienceEntry }) {
   return (
     <article className="h-[277px] overflow-hidden rounded-[20px] bg-white px-[30px] pt-[21px]">
       <span className="inline-flex rounded-[20px] bg-[#f8f8f8] px-2.5 py-[5px] text-xs font-semibold tracking-[-0.36px] text-[#878787]">
@@ -89,7 +94,13 @@ function ExperienceCard({ entry }: { entry: (typeof experienceEntries)[number] }
   )
 }
 
-export function ArchivePage({ character, onOpenRoadmap }: ArchivePageProps) {
+export function ArchivePage({
+  character,
+  completedCount = 2,
+  experiences = experienceEntries,
+  onOpenRoadmap,
+  skillGroups = archiveSkillGroups,
+}: ArchivePageProps) {
   const competencyScores = competencyMetrics.map(({ key, label }) => ({
     label,
     value: clampCompetencyScore(character.competencies[key]),
@@ -117,7 +128,7 @@ export function ArchivePage({ character, onOpenRoadmap }: ArchivePageProps) {
           <div className="flex flex-col gap-2.5">
             <h1 className="text-[22px] font-semibold tracking-[-0.66px]">{character.title}</h1>
             <p className="text-sm tracking-[-0.28px] opacity-50">
-              {character.role} · Lv.{character.level} · 완료 2개 · 진행률 {character.progress}%
+              {character.role} · Lv.{character.level} · 완료 {completedCount}개 · 진행률 {character.progress}%
             </p>
           </div>
         </div>
@@ -172,7 +183,7 @@ export function ArchivePage({ character, onOpenRoadmap }: ArchivePageProps) {
           <h2 className="text-lg font-semibold tracking-[-0.54px]">스킬 트리</h2>
           <div className="mt-[19px] h-[434px] overflow-y-auto pr-3">
             <div className="flex flex-col gap-5 pb-5">
-              {archiveSkillGroups.map((group) => (
+              {skillGroups.map((group) => (
                 <section className="flex flex-col gap-4" key={group.level}>
                   <div className="flex items-center gap-[13px]">
                     <span className="text-sm font-semibold tracking-[-0.28px] opacity-50">
@@ -202,12 +213,18 @@ export function ArchivePage({ character, onOpenRoadmap }: ArchivePageProps) {
           width={16}
         />
         <h2 className="text-lg font-semibold tracking-[-0.54px]">경험 카드</h2>
-        <span className="text-sm tracking-[-0.28px] opacity-50">자기소개서 소스 · 2장</span>
+        <span className="text-sm tracking-[-0.28px] opacity-50">
+          {experiences.length > 0 ? `자기소개서 소스 · ${experiences.length}장` : '아직 기록된 경험이 없어요'}
+        </span>
       </div>
       <div className="mt-[29px] grid grid-cols-2 gap-5">
-        {experienceEntries.map((entry, index) => (
-          <ExperienceCard entry={entry} key={index} />
-        ))}
+        {experiences.length > 0 ? (
+          experiences.map((entry, index) => <ExperienceCard entry={entry} key={index} />)
+        ) : (
+          <article className="col-span-2 flex h-[188px] items-center justify-center rounded-[20px] bg-white text-sm font-medium tracking-[-0.28px] text-black/40">
+            아직 기록된 경험이 없어요
+          </article>
+        )}
       </div>
     </section>
   )

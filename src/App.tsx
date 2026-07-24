@@ -8,8 +8,13 @@ import { MythHub } from './components/MythHub'
 import { RoadmapPage } from './components/RoadmapPage'
 import { SelfAssessment } from './components/SelfAssessment'
 import { Sidebar } from './components/Sidebar'
+import {
+  assessmentToCompetencyScores,
+  type ArchiveCharacter,
+  type ArchiveSkillGroup,
+} from './data/archive'
 import { mythCharacters, type EggId } from './data/home'
-import type { RoadmapCharacter, RoadmapQuest } from './data/roadmap'
+import { getRoadmapQuestGroups, type RoadmapCharacter, type RoadmapQuest } from './data/roadmap'
 import {
   digitalMarketer,
   initialAssessmentAnswers,
@@ -36,6 +41,11 @@ function App() {
   const selectedJob = selectedJobId ? availableJobs.find((job) => job.id === selectedJobId) ?? null : null
   const openArchive = (characterId: string) => {
     setActiveCharacterId(characterId)
+    setRoadmapTarget({ kind: 'existing', id: characterId })
+    setStep('archive')
+  }
+  const openDraftArchive = () => {
+    setRoadmapTarget({ kind: 'draft' })
     setStep('archive')
   }
   const openRoadmap = (characterId: string) => {
@@ -68,22 +78,63 @@ function App() {
   }
 
   if (step === 'archive') {
+    const isDraftArchive = roadmapTarget.kind === 'draft'
     const activeCharacter = mythCharacters.find(({ id }) => id === activeCharacterId) ?? mythCharacters[0]
+    const selectedJobForArchive = selectedJob ?? digitalMarketer
+    const draftArchiveCharacter: ArchiveCharacter = {
+      title: nickname,
+      role: selectedJobForArchive.title,
+      level: 1,
+      progress: 5,
+      competencies: assessmentToCompetencyScores(assessmentAnswers),
+    }
+    const draftArchiveSkillGroups: ArchiveSkillGroup[] = getRoadmapQuestGroups(customQuestsByRoadmap.draft ?? []).map(
+      (group) => ({
+        level: group.level,
+        label: group.label,
+        skills: group.quests.map(({ category, status, title }) => ({ category, status, title })),
+      }),
+    )
+    const draftCompletedCount = draftArchiveSkillGroups.reduce(
+      (count, group) => count + group.skills.filter((skill) => skill.status === 'complete').length,
+      0,
+    )
 
     return (
       <AppShell
         sidebar={
-          <Sidebar
-            activeCharacterId={activeCharacter.id}
-            characters={mythCharacters}
-            onCreateCharacter={() => setStep('egg')}
-            onHome={() => setStep('hub')}
-            onSelectCharacter={openRoadmap}
-          />
+          isDraftArchive ? (
+            <Sidebar
+              draftCharacter={{ title: nickname, role: selectedJobForArchive.title, level: 1 }}
+              onCreateCharacter={() => setStep('egg')}
+              onHome={() => setStep('hub')}
+              variant="draft"
+            />
+          ) : (
+            <Sidebar
+              activeCharacterId={activeCharacter.id}
+              characters={mythCharacters}
+              onCreateCharacter={() => setStep('egg')}
+              onHome={() => setStep('hub')}
+              onSelectCharacter={openRoadmap}
+            />
+          )
         }
         variant="archive"
       >
-        <ArchivePage character={activeCharacter} onOpenRoadmap={() => openRoadmap(activeCharacter.id)} />
+        <ArchivePage
+          character={isDraftArchive ? draftArchiveCharacter : activeCharacter}
+          completedCount={isDraftArchive ? draftCompletedCount : undefined}
+          experiences={isDraftArchive ? [] : undefined}
+          onOpenRoadmap={() => {
+            if (isDraftArchive) {
+              setStep('roadmap')
+              return
+            }
+            openRoadmap(activeCharacter.id)
+          }}
+          skillGroups={isDraftArchive ? draftArchiveSkillGroups : undefined}
+        />
       </AppShell>
     )
   }
@@ -199,6 +250,13 @@ function App() {
               [roadmapKey]: [...(current[roadmapKey] ?? []), quest],
             }))
           }
+          onOpenArchive={() => {
+            if (isDraftRoadmap) {
+              openDraftArchive()
+              return
+            }
+            openArchive(selectedExistingCharacter.id)
+          }}
         />
       </AppShell>
     )

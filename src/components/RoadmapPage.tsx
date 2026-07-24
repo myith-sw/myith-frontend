@@ -3,7 +3,7 @@ import { homeAssets } from '../assets/home'
 import { roadmapAssets } from '../assets/roadmap'
 import { competencyMetrics } from '../data/archive'
 import {
-  initialRoadmapQuestGroups,
+  getRoadmapQuestGroups,
   type RoadmapCharacter,
   type RoadmapQuest,
 } from '../data/roadmap'
@@ -13,6 +13,7 @@ interface RoadmapPageProps {
   character: RoadmapCharacter
   customQuests: RoadmapQuest[]
   onAddQuest: (quest: RoadmapQuest) => void
+  onOpenArchive: () => void
 }
 
 function RoadmapQuestCard({ quest }: { quest: RoadmapQuest }) {
@@ -63,16 +64,13 @@ function RoadmapQuestCard({ quest }: { quest: RoadmapQuest }) {
   )
 }
 
-export function RoadmapPage({ character, customQuests, onAddQuest }: RoadmapPageProps) {
+export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive }: RoadmapPageProps) {
   const [isQuestFormOpen, setIsQuestFormOpen] = useState(false)
   const [questTitle, setQuestTitle] = useState('')
   const [questCategory, setQuestCategory] = useState(competencyMetrics[0].label)
   const [questLevel, setQuestLevel] = useState(1)
   const canAddQuest = questTitle.trim().length > 0
-  const questGroups = initialRoadmapQuestGroups.map((group) => ({
-    ...group,
-    quests: [...group.quests, ...customQuests.filter((quest) => quest.level === group.level)],
-  }))
+  const questGroups = getRoadmapQuestGroups(customQuests)
 
   const addQuest = () => {
     if (!canAddQuest) return
@@ -117,6 +115,7 @@ export function RoadmapPage({ character, customQuests, onAddQuest }: RoadmapPage
             </div>
             <button
               className="flex h-10 items-center justify-center gap-2 rounded-[10px] border-[1.2px] border-[#eaeaea] bg-white px-[14px] text-[15px] font-medium tracking-[-0.3px] text-black/50"
+              onClick={onOpenArchive}
               type="button"
             >
               <img

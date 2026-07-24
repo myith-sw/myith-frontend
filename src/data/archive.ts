@@ -1,3 +1,5 @@
+import type { AssessmentLevel } from './onboarding'
+
 export type ArchiveSkillStatus = 'complete' | 'pending' | 'open' | 'locked'
 
 export interface ArchiveSkill {
@@ -24,6 +26,20 @@ export const competencyKeys = [
 export type CompetencyKey = (typeof competencyKeys)[number]
 
 export type CompetencyScores = Record<CompetencyKey, number>
+
+export interface ArchiveCharacter {
+  title: string
+  role: string
+  level: number
+  progress: number
+  competencies: CompetencyScores
+}
+
+export interface ArchiveExperienceEntry {
+  category: string
+  title: string
+  entries: [string, string][]
+}
 
 export interface CompetencyMetric {
   key: CompetencyKey
@@ -54,6 +70,37 @@ export function clampCompetencyScore(value: number) {
   }
 
   return Math.min(100, Math.max(0, Math.round(value)))
+}
+
+const assessmentScoreMap: Record<AssessmentLevel, number> = {
+  모름: 0,
+  들어봄: 33,
+  해봄: 67,
+  '혼자 가능': 100,
+}
+
+const assessmentCompetencies: Record<CompetencyKey, string[]> = {
+  programming: ['environment', 'toy-app', 'testing'],
+  computerScience: ['algorithm'],
+  database: ['database'],
+  serverApi: ['rest-api', 'security'],
+  collaboration: ['version-control'],
+  deployment: [],
+}
+
+export function assessmentToCompetencyScores(answers: Record<string, AssessmentLevel>): CompetencyScores {
+  return competencyKeys.reduce<CompetencyScores>((scores, key) => {
+    const questionIds = assessmentCompetencies[key]
+
+    if (questionIds.length === 0) {
+      scores[key] = 0
+      return scores
+    }
+
+    const total = questionIds.reduce((sum, id) => sum + assessmentScoreMap[answers[id] ?? '모름'], 0)
+    scores[key] = clampCompetencyScore(total / questionIds.length)
+    return scores
+  }, {} as CompetencyScores)
 }
 
 export const archiveSkillGroups: ArchiveSkillGroup[] = [
@@ -98,7 +145,7 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
   },
 ]
 
-export const experienceEntries = [
+export const experienceEntries: ArchiveExperienceEntry[] = [
   {
     category: '프로그래밍 기초',
     title: '언어 기초로 토이앱을 만든다',

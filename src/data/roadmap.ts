@@ -73,3 +73,10 @@ export const initialRoadmapQuestGroups: RoadmapQuestGroup[] = [
     quests: [{ id: 'collaboration-project', level: 6, category: '서버·API', title: '협업 프로젝트로 실전을 쌓는다', status: 'locked' }],
   },
 ]
+
+export function getRoadmapQuestGroups(customQuests: RoadmapQuest[] = []): RoadmapQuestGroup[] {
+  return initialRoadmapQuestGroups.map((group) => ({
+    ...group,
+    quests: [...group.quests, ...customQuests.filter((quest) => quest.level === group.level)],
+  }))
+}
