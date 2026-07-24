@@ -45,7 +45,7 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
         <img
           alt=""
           aria-hidden="true"
-          className={`size-10 shrink-0 ${isLocked ? 'object-bottom' : 'object-contain'}`}
+          className="size-10 shrink-0 object-contain"
           height={40}
           src={statusIcon}
           width={40}
