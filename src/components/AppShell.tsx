@@ -20,7 +20,7 @@ export function AppShell({ sidebar, children, variant = 'home' }: AppShellProps)
       {sidebar}
       <main
         className={`relative min-h-screen min-w-0 flex-1 overflow-x-hidden ${
-          isHome || isQuest ? 'bg-white' : isAssessment ? 'bg-white' : 'bg-[#f6f6f6]'
+          isHome || isQuest || isRoadmap ? 'bg-white' : isAssessment ? 'bg-white' : 'bg-[#f6f6f6]'
         }`}
       >
         {isHome && (
