@@ -1,9 +1,17 @@
-import { useState } from 'react'
 import { homeAssets } from '../assets/home'
 import { eggOptions, type EggId } from '../data/home'
 
-export function EggSelectionHome() {
-  const [selectedEggId, setSelectedEggId] = useState<EggId | null>(null)
+interface EggSelectionHomeProps {
+  selectedEggId: EggId | null
+  onSelectEgg: (eggId: EggId) => void
+  onContinue: () => void
+}
+
+export function EggSelectionHome({
+  selectedEggId,
+  onSelectEgg,
+  onContinue,
+}: EggSelectionHomeProps) {
   const highlightedEggId = selectedEggId ?? 'teoreuteu'
 
   return (
@@ -29,7 +37,7 @@ export function EggSelectionHome() {
                 aria-pressed={isSelected}
                 className="relative size-[176.768px] cursor-pointer border-0 bg-transparent p-0 transition-opacity duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#60d4d3]"
                 key={egg.id}
-                onClick={() => setSelectedEggId(egg.id)}
+                onClick={() => onSelectEgg(egg.id)}
                 style={{ opacity: isHighlighted ? 1 : 0.2 }}
                 type="button"
               >
@@ -63,6 +71,7 @@ export function EggSelectionHome() {
         <button
           className="flex h-[50px] w-[191px] items-center justify-center gap-2 rounded-[10px] text-sm font-semibold text-white transition-colors disabled:cursor-default disabled:bg-[#e9e9e9] enabled:cursor-pointer enabled:bg-[#60d4d3]"
           disabled={!selectedEggId}
+          onClick={onContinue}
           type="button"
         >
           선택할게요

@@ -1,4 +1,6 @@
 import { homeAssets } from '../assets/home'
+import type { CharacterId, CharacterStage } from '../assets/characters'
+import type { CompetencyScores } from './archive'
 import type { CSSProperties } from 'react'
 
 export type EggId = 'teoreuteu' | 'migeo' | 'soongeo'
@@ -12,9 +14,21 @@ export interface EggOption {
 }
 
 export interface SidebarCharacter {
+  id?: string
   title: string
   role: string
   level: number
+}
+
+export interface MythCharacter extends SidebarCharacter {
+  id: string
+  stageLabel: string
+  description: string
+  progress: number
+  nextQuest: string
+  characterId: CharacterId
+  stage: CharacterStage
+  competencies: CompetencyScores
 }
 
 export const eggOptions: EggOption[] = [
@@ -71,20 +85,67 @@ export const eggOptions: EggOption[] = [
   },
 ]
 
-export const sidebarCharacters: SidebarCharacter[] = [
+export const mythCharacters: MythCharacter[] = [
   {
+    id: 'backend-apprentice',
     title: '견습 서버 개발자',
     role: '백엔드 개발자',
     level: 4,
+    stageLabel: '전설 단계',
+    description: '서버, API, DB로 서비스의 뼈대를 만든다',
+    progress: 80,
+    nextQuest: 'REST API 구조 이해하기',
+    characterId: 'deokbaseu',
+    stage: 4,
+    competencies: {
+      programming: 67,
+      computerScience: 80,
+      database: 18,
+      serverApi: 67,
+      collaboration: 90,
+      deployment: 10,
+    },
   },
   {
+    id: 'data-analyst',
     title: '데이터 분석가',
     role: '데이터 분석가',
     level: 1,
+    stageLabel: '입문 단계',
+    description: '데이터 속 문제의 흐름과 의사결정의 근거를 찾는다',
+    progress: 5,
+    nextQuest: '데이터 시각화 그래프 만들어보기',
+    characterId: 'kokkoburi',
+    stage: 1,
+    competencies: {
+      programming: 38,
+      computerScience: 88,
+      database: 93,
+      serverApi: 24,
+      collaboration: 72,
+      deployment: 30,
+    },
   },
   {
+    id: 'digital-marketer',
     title: 'ㅇㅇㅇ',
     role: '디지털 마케터',
-    level: 3,
+    level: 2,
+    stageLabel: '견습 단계',
+    description: '콘텐츠와 데이터를 엮어 사람들의 행동을 움직인다',
+    progress: 20,
+    nextQuest: '콘텐츠 반응 지표 정리하기',
+    characterId: 'progul',
+    stage: 2,
+    competencies: {
+      programming: 28,
+      computerScience: 42,
+      database: 55,
+      serverApi: 18,
+      collaboration: 92,
+      deployment: 48,
+    },
   },
 ]
+
+export const sidebarCharacters: SidebarCharacter[] = mythCharacters
