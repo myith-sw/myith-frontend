@@ -5,3 +5,143 @@
     Pretendard, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
 }
+
+.ai-skeleton-line {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 999px;
+  background: rgba(153, 84, 255, 0.12);
+}
+
+.ai-skeleton-line::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(153, 84, 255, 0.38),
+    transparent
+  );
+  animation: ai-skeleton-shimmer 1.15s ease-in-out infinite;
+}
+
+.ai-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #9954ff;
+  box-shadow: 0 0 8px rgba(153, 84, 255, 0.8);
+  opacity: 0;
+  animation: ai-particle-drift 1.8s ease-in-out infinite;
+}
+
+.ai-particle-1 {
+  left: 9%;
+  top: 70%;
+  animation-delay: 0ms;
+}
+
+.ai-particle-2 {
+  left: 21%;
+  top: 30%;
+  animation-delay: 180ms;
+}
+
+.ai-particle-3 {
+  left: 36%;
+  top: 78%;
+  animation-delay: 420ms;
+}
+
+.ai-particle-4 {
+  left: 49%;
+  top: 42%;
+  animation-delay: 660ms;
+}
+
+.ai-particle-5 {
+  left: 62%;
+  top: 73%;
+  animation-delay: 900ms;
+}
+
+.ai-particle-6 {
+  left: 74%;
+  top: 32%;
+  animation-delay: 1.12s;
+}
+
+.ai-particle-7 {
+  left: 86%;
+  top: 68%;
+  animation-delay: 1.34s;
+}
+
+.ai-particle-8 {
+  left: 94%;
+  top: 38%;
+  animation-delay: 1.54s;
+}
+
+.ai-word-reveal {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(3px);
+  transform: translateY(4px);
+  animation: ai-word-reveal 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--ai-word-delay);
+}
+
+@keyframes ai-skeleton-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes ai-particle-drift {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.4);
+  }
+  35% {
+    opacity: 0.9;
+  }
+  75% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(8px, -22px, 0) scale(1.35);
+  }
+}
+
+@keyframes ai-word-reveal {
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-particle,
+  .ai-skeleton-line::after,
+  .ai-word-reveal {
+    animation: none;
+  }
+
+  .ai-particle {
+    display: none;
+  }
+
+  .ai-word-reveal {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}

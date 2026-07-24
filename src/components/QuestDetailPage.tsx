@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { homeAssets } from '../assets/home'
 import { questDetailAssets } from '../assets/quest-detail'
 import type { RoadmapQuest } from '../data/roadmap'
+import { AIAssistModal, type StarRecord } from './AIAssistModal'
 
 interface QuestDetailPageProps {
   onBack: () => void
@@ -32,8 +33,16 @@ const starFields = [
   { id: 'result', label: '결과 (Result)', placeholder: '정리 후 얻은 결과나 배운 점을 적어보세요.' },
 ] as const
 
+const emptyStarRecord: StarRecord = {
+  situation: '',
+  task: '',
+  action: '',
+  result: '',
+}
+
 export function QuestDetailPage({ onBack, quest }: QuestDetailPageProps) {
-  const [starRecord, setStarRecord] = useState<Record<string, string>>({})
+  const [starRecord, setStarRecord] = useState<StarRecord>(emptyStarRecord)
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false)
   const isLocked = quest.status === 'locked'
   const detail = questDetails[quest.id] ?? {
     completionCriteria: `${quest.title}를 완료하고 배운 내용을 정리한다`,
@@ -41,6 +50,7 @@ export function QuestDetailPage({ onBack, quest }: QuestDetailPageProps) {
     recommendedCertificate: '해당 없음',
   }
   const canComplete = !isLocked && starFields.every(({ id }) => starRecord[id]?.trim())
+  const canEnhance = !isLocked && starFields.every(({ id }) => starRecord[id].trim())
 
   return (
     <section className="w-full pb-24">
@@ -97,7 +107,9 @@ export function QuestDetailPage({ onBack, quest }: QuestDetailPageProps) {
 
         <div className="mt-[18px] flex justify-end gap-2.5 pt-2.5">
           <button
-            className="flex items-center gap-2 rounded-[10px] border-[1.2px] border-[#f1e7ff] bg-[rgba(231,214,255,0.24)] px-5 py-3 text-sm font-medium tracking-[-0.28px] text-[#9954ff]"
+            className="flex items-center gap-2 rounded-[10px] border-[1.2px] border-[#f1e7ff] bg-[rgba(231,214,255,0.24)] px-5 py-3 text-sm font-medium tracking-[-0.28px] text-[#9954ff] transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
+            disabled={!canEnhance}
+            onClick={() => setIsAiModalOpen(true)}
             type="button"
           >
             <img alt="" aria-hidden="true" className="h-[15.341px] w-3.5" src={questDetailAssets.aiEnhance} />
@@ -115,6 +127,16 @@ export function QuestDetailPage({ onBack, quest }: QuestDetailPageProps) {
           </button>
         </div>
       </article>
+
+      <AIAssistModal
+        onApply={(record) => {
+          setStarRecord(record)
+          setIsAiModalOpen(false)
+        }}
+        onClose={() => setIsAiModalOpen(false)}
+        open={isAiModalOpen}
+        originalRecord={starRecord}
+      />
     </section>
   )
 }
