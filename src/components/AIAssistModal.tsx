@@ -6,23 +6,14 @@ export type StarFieldId = 'situation' | 'task' | 'action' | 'result'
 export type StarRecord = Record<StarFieldId, string>
 
 interface AIAssistModalProps {
-  onApply: (record: StarRecord) => void
+  onApply: (record: StarRecord, enhancementId: string) => void
   onClose: () => void
   open: boolean
   originalRecord: StarRecord
+  requestEnhancement: (signal: AbortSignal) => Promise<{ enhancementId: string; record: StarRecord }>
 }
 
-type GenerationStatus = 'generating' | 'revealing' | 'ready'
-
-const enhancedStarRecord: StarRecord = {
-  situation:
-    'CS 면접 준비를 하면서 네트워크·운영체제·데이터베이스 개념을 각각 공부했지만, 질문에 맞춰 핵심을 구조적으로 설명하는 데 어려움을 느꼈다.',
-  task: '자주 출제되는 CS 질문을 주제별로 선별하고, 각 질문에 대해 핵심 개념과 실제 사례를 포함한 답변을 정리하기로 했다.',
-  action:
-    '네트워크·OS·DB 영역별 질문을 수집한 뒤 답변을 정의·원리·활용 사례 순서로 작성하고, 소리 내어 설명하며 부족한 부분을 보완했다.',
-  result:
-    '핵심 개념을 짧고 논리적으로 설명할 수 있게 되었고, 부족한 영역을 빠르게 찾아 반복 학습할 수 있는 면접 답변 자료를 완성했다.',
-}
+type GenerationStatus = 'generating' | 'revealing' | 'ready' | 'failed'
 
 const starRows: Array<{
   englishLabel: string
@@ -36,26 +27,15 @@ const starRows: Array<{
   { id: 'result', letter: 'R', koreanLabel: '결과', englishLabel: 'Result' },
 ]
 
-function requestAiEnhancement(signal: AbortSignal) {
-  return new Promise<StarRecord>((resolve, reject) => {
-    const timerId = window.setTimeout(() => resolve(enhancedStarRecord), 4_000)
-
-    const abort = () => {
-      window.clearTimeout(timerId)
-      reject(new DOMException('AI enhancement request aborted', 'AbortError'))
-    }
-
-    if (signal.aborted) {
-      abort()
-      return
-    }
-
-    signal.addEventListener('abort', abort, { once: true })
-  })
-}
-
-export function AIAssistModal({ onApply, onClose, open, originalRecord }: AIAssistModalProps) {
+export function AIAssistModal({
+  onApply,
+  onClose,
+  open,
+  originalRecord,
+  requestEnhancement,
+}: AIAssistModalProps) {
   const [enhancedRecord, setEnhancedRecord] = useState<StarRecord | null>(null)
+  const [enhancementId, setEnhancementId] = useState('')
   const [status, setStatus] = useState<GenerationStatus>('generating')
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
@@ -66,13 +46,15 @@ export function AIAssistModal({ onApply, onClose, open, originalRecord }: AIAssi
     const controller = new AbortController()
     let readyTimerId: number | undefined
     setEnhancedRecord(null)
+    setEnhancementId('')
     setStatus('generating')
 
-    requestAiEnhancement(controller.signal)
-      .then((record) => {
+    requestEnhancement(controller.signal)
+      .then(({ enhancementId: nextEnhancementId, record }) => {
         if (controller.signal.aborted) return
 
         setEnhancedRecord(record)
+        setEnhancementId(nextEnhancementId)
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           setStatus('ready')
           return
@@ -84,6 +66,7 @@ export function AIAssistModal({ onApply, onClose, open, originalRecord }: AIAssi
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           console.error('AI enhancement failed', error)
+          setStatus('failed')
         }
       })
 
@@ -91,7 +74,7 @@ export function AIAssistModal({ onApply, onClose, open, originalRecord }: AIAssi
       controller.abort()
       if (readyTimerId !== undefined) window.clearTimeout(readyTimerId)
     }
-  }, [open])
+  }, [open, requestEnhancement])
 
   useEffect(() => {
     if (!open) return
@@ -139,7 +122,7 @@ export function AIAssistModal({ onApply, onClose, open, originalRecord }: AIAssi
 
   if (!open) return null
 
-  const canApply = status === 'ready' && enhancedRecord !== null
+  const canApply = status === 'ready' && enhancedRecord !== null && enhancementId.length > 0
 
   return createPortal(
     <div
@@ -214,7 +197,9 @@ export function AIAssistModal({ onApply, onClose, open, originalRecord }: AIAssi
                   <span className="absolute right-3 top-2 rounded-full bg-[#eee3ff] px-2 py-0.5 text-[9px] font-semibold text-[#8d45f5]">
                     AI 보완
                   </span>
-                  {status === 'generating' || !enhancedRecord ? (
+                  {status === 'failed' ? (
+                    <p className="text-[#d65454]" role="alert">AI 보완에 실패했습니다. 닫은 뒤 다시 시도해주세요.</p>
+                  ) : status === 'generating' || !enhancedRecord ? (
                     <GeneratingResult />
                   ) : (
                     <p className="min-w-0 pr-12 pt-3">
@@ -240,7 +225,7 @@ export function AIAssistModal({ onApply, onClose, open, originalRecord }: AIAssi
             className="flex items-center gap-2 rounded-[10px] bg-[#9954ff] px-6 py-3 text-sm font-semibold tracking-[-0.28px] text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-35"
             disabled={!canApply}
             onClick={() => {
-              if (enhancedRecord) onApply(enhancedRecord)
+              if (enhancedRecord) onApply(enhancedRecord, enhancementId)
             }}
             type="button"
           >

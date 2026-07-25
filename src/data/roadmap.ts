@@ -1,14 +1,12 @@
-import type { CharacterId, CharacterStage } from '../assets/characters'
-
-export type RoadmapQuestStatus = 'complete' | 'pending' | 'open' | 'locked'
+export type RoadmapQuestStatus = 'complete' | 'known' | 'pending' | 'open' | 'locked'
 
 export interface RoadmapCharacter {
   name: string
   job: string
   description: string
-  characterId: CharacterId
+  characterId: string
   level: number
-  stage: CharacterStage
+  stage: number
   stageLabel: string
   progress: number
 }
@@ -16,9 +14,11 @@ export interface RoadmapCharacter {
 export interface RoadmapQuest {
   id: string
   level: number
+  axisCode?: string
   category: string
   title: string
   status: RoadmapQuestStatus
+  version?: number
 }
 
 export interface RoadmapQuestGroup {

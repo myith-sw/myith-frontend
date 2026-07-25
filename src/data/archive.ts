@@ -1,6 +1,6 @@
 import type { AssessmentLevel } from './onboarding'
 
-export type ArchiveSkillStatus = 'complete' | 'pending' | 'open' | 'locked'
+export type ArchiveSkillStatus = 'complete' | 'known' | 'pending' | 'open' | 'locked'
 
 export interface ArchiveSkill {
   category: string
@@ -37,8 +37,17 @@ export interface ArchiveCharacter {
 
 export interface ArchiveExperienceEntry {
   category: string
+  level?: number
+  levelLabel?: string
   title: string
   entries: [string, string][]
+}
+
+export const archiveLevelLabels: Record<number, string> = {
+  1: '입문 단계',
+  2: '견습 단계',
+  3: '성장 단계',
+  4: '전설 단계',
 }
 
 export interface CompetencyMetric {
@@ -72,7 +81,7 @@ export function clampCompetencyScore(value: number) {
   return Math.min(100, Math.max(0, Math.round(value)))
 }
 
-const assessmentScoreMap: Record<AssessmentLevel, number> = {
+const assessmentScoreMap: Record<string, number> = {
   모름: 0,
   들어봄: 33,
   해봄: 67,
@@ -97,7 +106,7 @@ export function assessmentToCompetencyScores(answers: Record<string, AssessmentL
       return scores
     }
 
-    const total = questionIds.reduce((sum, id) => sum + assessmentScoreMap[answers[id] ?? '모름'], 0)
+    const total = questionIds.reduce((sum, id) => sum + (assessmentScoreMap[answers[id] ?? '모름'] ?? 0), 0)
     scores[key] = clampCompetencyScore(total / questionIds.length)
     return scores
   }, {} as CompetencyScores)
@@ -148,6 +157,8 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
 export const experienceEntries: ArchiveExperienceEntry[] = [
   {
     category: '프로그래밍 기초',
+    level: 1,
+    levelLabel: archiveLevelLabels[1],
     title: '언어 기초로 토이앱을 만든다',
     entries: [
       ['S', '언어 문법은 봤지만 직접 만들어본 적이 없어 감이 없었다.'],
@@ -158,6 +169,8 @@ export const experienceEntries: ArchiveExperienceEntry[] = [
   },
   {
     category: '프로그래밍 기초',
+    level: 1,
+    levelLabel: archiveLevelLabels[1],
     title: '언어 기초로 토이앱을 만든다',
     entries: [
       ['S', '언어 문법은 봤지만 직접 만들어본 적이 없어 감이 없었다.'],

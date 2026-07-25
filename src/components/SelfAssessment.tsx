@@ -1,14 +1,18 @@
 import { homeAssets } from '../assets/home'
-import { assessmentAssets } from '../assets/assessment'
 import {
-  assessmentLevels,
-  assessmentQuestions,
+  type AssessmentOption,
+  type AssessmentQuestion,
   type AssessmentLevel,
   type ProjectExperience,
 } from '../data/onboarding'
 import { ProjectExperienceCard } from './ProjectExperienceCard'
 
 interface SelfAssessmentProps {
+  error?: string
+  progressMessage?: string
+  submitting?: boolean
+  levels: AssessmentOption[]
+  questions: AssessmentQuestion[]
   jobTitle: string
   answers: Record<string, AssessmentLevel>
   projectExperiences: ProjectExperience[]
@@ -23,6 +27,11 @@ interface SelfAssessmentProps {
 }
 
 export function SelfAssessment({
+  error,
+  progressMessage,
+  submitting = false,
+  levels,
+  questions,
   jobTitle,
   answers,
   projectExperiences,
@@ -44,12 +53,12 @@ export function SelfAssessment({
       </header>
 
       <div className="mt-10 flex flex-col gap-[30px]">
-        {assessmentQuestions.map((question) => (
+        {questions.map((question) => (
           <article className="rounded-[20px] bg-[#f7f7f7] p-5" key={question.id}>
             <h2 className="text-base font-semibold tracking-[-0.48px]">{question.prompt}</h2>
             <div className="mt-[14px] grid grid-cols-4 gap-2" role="radiogroup" aria-label={question.prompt}>
-              {assessmentLevels.map((level) => {
-                const isSelected = answers[question.id] === level
+              {levels.map((level) => {
+                const isSelected = answers[question.id] === level.id
 
                 return (
                   <button
@@ -59,12 +68,12 @@ export function SelfAssessment({
                         ? 'border-white bg-[#7dcecb] font-semibold text-white'
                         : 'border-[#e7e7e7] bg-white font-medium text-black'
                     }`}
-                    key={level}
-                    onClick={() => onAnswerChange(question.id, level)}
+                    key={level.id}
+                    onClick={() => onAnswerChange(question.id, level.id)}
                     role="radio"
                     type="button"
                   >
-                    {level}
+                    {level.label}
                   </button>
                 )
               })}
@@ -86,11 +95,18 @@ export function SelfAssessment({
         <div className="flex w-full items-center justify-center">
           <button
             aria-label="프로젝트 경험 추가"
-            className="flex h-10 w-[400px] items-center justify-center rounded-[20px] bg-[#f7f7f7] transition-colors hover:bg-[#f0f0f0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
+            className="group flex h-10 w-[400px] items-center justify-center rounded-[20px] border border-[#d8eeee] bg-[#f0fbfa] text-[#67c8c4] transition-colors hover:border-[#bde4e2] hover:bg-[#e5f8f7] hover:text-[#4eb9b5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
             onClick={onAddProjectExperience}
             type="button"
           >
-            <img alt="" aria-hidden="true" className="size-10" src={assessmentAssets.projectAdd} />
+            <svg
+              aria-hidden="true"
+              className="size-5 transition-transform group-hover:scale-110"
+              fill="none"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 4.5V15.5M4.5 10H15.5" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+            </svg>
           </button>
         </div>
       </div>
@@ -98,13 +114,16 @@ export function SelfAssessment({
       <div className="mt-10 flex justify-end">
         <button
           className="flex h-10 items-center justify-center gap-2 rounded-[10px] bg-[#6bd8d5] px-5 text-sm font-medium text-white"
+          disabled={submitting}
           onClick={onGenerateRoadmap}
           type="button"
         >
-          로드맵 생성
+          {submitting ? '로드맵 생성 중…' : '로드맵 생성'}
           <img alt="" aria-hidden="true" className="h-[10px] w-[11.6px]" src={homeAssets.ctaArrow} />
         </button>
       </div>
+      {progressMessage && <p className="mt-4 text-right text-sm font-medium text-[#58a9a3]" role="status">{progressMessage}</p>}
+      {error && <p className="mt-3 text-right text-sm font-medium text-[#d65454]" role="alert">{error}</p>}
     </section>
   )
 }

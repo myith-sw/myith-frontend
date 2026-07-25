@@ -1,14 +1,13 @@
 import type { ImgHTMLAttributes } from 'react'
 import {
   characterAssets,
-  type CharacterId,
   type CharacterStage,
 } from '../assets/characters'
 
 export interface CharacterSpriteProps
   extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'alt' | 'src'> {
-  characterId: CharacterId
-  stage: CharacterStage
+  characterId: string
+  stage: number
   size?: number
   alt?: string
 }
@@ -22,6 +21,10 @@ export function CharacterSprite({
   style,
   ...imageProps
 }: CharacterSpriteProps) {
+  const fallbackCharacterId = 'teoreuteu'
+  const assetId = characterId in characterAssets ? characterId as keyof typeof characterAssets : fallbackCharacterId
+  const assetStage = Math.min(4, Math.max(1, Math.round(stage))) as CharacterStage
+
   return (
     <img
       {...imageProps}
@@ -30,7 +33,7 @@ export function CharacterSprite({
       decoding="sync"
       height={size}
       loading="eager"
-      src={characterAssets[characterId][stage]}
+      src={characterAssets[assetId][assetStage]}
       style={{ width: size, height: size, ...style }}
       width={size}
     />

@@ -2,12 +2,14 @@ import { homeAssets } from '../assets/home'
 import { eggOptions, type EggId } from '../data/home'
 
 interface EggSelectionHomeProps {
+  disabled?: boolean
   selectedEggId: EggId | null
   onSelectEgg: (eggId: EggId) => void
   onContinue: () => void
 }
 
 export function EggSelectionHome({
+  disabled = false,
   selectedEggId,
   onSelectEgg,
   onContinue,
@@ -35,7 +37,8 @@ export function EggSelectionHome({
               <button
                 aria-label={`${egg.alt} 선택`}
                 aria-pressed={isSelected}
-                className="relative size-[176.768px] cursor-pointer border-0 bg-transparent p-0 transition-opacity duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#60d4d3]"
+                className="relative size-[176.768px] border-0 bg-transparent p-0 transition-opacity duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#60d4d3] enabled:cursor-pointer disabled:cursor-default"
+                disabled={disabled}
                 key={egg.id}
                 onClick={() => onSelectEgg(egg.id)}
                 style={{ opacity: isHighlighted ? 1 : 0.2 }}
@@ -70,7 +73,7 @@ export function EggSelectionHome({
 
         <button
           className="flex h-[50px] w-[191px] items-center justify-center gap-2 rounded-[10px] text-sm font-semibold text-white transition-colors disabled:cursor-default disabled:bg-[#e9e9e9] enabled:cursor-pointer enabled:bg-[#60d4d3]"
-          disabled={!selectedEggId}
+          disabled={disabled || !selectedEggId}
           onClick={onContinue}
           type="button"
         >

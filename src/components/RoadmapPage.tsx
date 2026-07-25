@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { homeAssets } from '../assets/home'
 import { roadmapAssets } from '../assets/roadmap'
-import { competencyMetrics } from '../data/archive'
 import {
-  getRoadmapQuestGroups,
   type RoadmapCharacter,
   type RoadmapQuest,
+  type RoadmapQuestGroup,
 } from '../data/roadmap'
 import { CharacterSprite } from './CharacterSprite'
+import { CustomSelect } from './CustomSelect'
 
 interface RoadmapPageProps {
+  axes: Array<{ code: string; name: string }>
   character: RoadmapCharacter
-  customQuests: RoadmapQuest[]
-  onAddQuest: (quest: RoadmapQuest) => void
+  levels: number[]
+  questGroups: RoadmapQuestGroup[]
+  onAddQuest: (quest: { title: string; axisCode: string; level: number }) => void
+  onMoveQuest: (quest: RoadmapQuest, targetIndex: number) => void
   onOpenArchive: () => void
   onOpenQuest: (quest: RoadmapQuest) => void
 }
@@ -21,6 +24,7 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
   const isLocked = quest.status === 'locked'
   const styles = {
     complete: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
+    known: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
     pending: 'border-[#ffe3aa] bg-[rgba(255,235,198,0.4)]',
     open: 'border-[#c8eeed] bg-white',
     locked: 'border-transparent bg-[#f6f6f6] text-black/50',
@@ -28,6 +32,7 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
 
   const statusIcon = {
     complete: homeAssets.archiveSkillComplete,
+    known: homeAssets.archiveSkillComplete,
     pending: homeAssets.archiveSkillPending,
     open: homeAssets.archiveSkillOpen,
     locked: homeAssets.archiveSkillLocked,
@@ -38,7 +43,10 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
       aria-disabled={isLocked}
       aria-label={isLocked ? `${quest.title} (잠김)` : quest.title}
       className={`flex min-h-[75px] w-full items-center justify-between rounded-[20px] border-[1.2px] p-4 text-left transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3] ${styles} ${isLocked ? 'cursor-default' : 'cursor-pointer hover:-translate-y-px'}`}
-      onClick={() => onOpenQuest(quest)}
+      onClick={() => {
+        if (!isLocked) onOpenQuest(quest)
+      }}
+      disabled={isLocked}
       type="button"
     >
       <div className="flex min-w-0 items-center gap-3">
@@ -67,27 +75,29 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
   )
 }
 
-export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive, onOpenQuest }: RoadmapPageProps) {
+export function RoadmapPage({
+  axes,
+  character,
+  levels,
+  questGroups,
+  onAddQuest,
+  onMoveQuest,
+  onOpenArchive,
+  onOpenQuest,
+}: RoadmapPageProps) {
   const [isQuestFormOpen, setIsQuestFormOpen] = useState(false)
   const [questTitle, setQuestTitle] = useState('')
-  const [questCategory, setQuestCategory] = useState(competencyMetrics[0].label)
-  const [questLevel, setQuestLevel] = useState(1)
+  const [questAxisCode, setQuestAxisCode] = useState(axes[0]?.code ?? '')
+  const [questLevel, setQuestLevel] = useState(levels[0] ?? 1)
   const canAddQuest = questTitle.trim().length > 0
-  const questGroups = getRoadmapQuestGroups(customQuests)
 
   const addQuest = () => {
     if (!canAddQuest) return
 
-    onAddQuest({
-      id: `custom-${Date.now()}`,
-      level: questLevel,
-      category: questCategory,
-      title: questTitle.trim(),
-      status: 'open',
-    })
+    onAddQuest({ level: questLevel, axisCode: questAxisCode, title: questTitle.trim() })
     setQuestTitle('')
-    setQuestLevel(1)
-    setQuestCategory(competencyMetrics[0].label)
+    setQuestLevel(levels[0] ?? 1)
+    setQuestAxisCode(axes[0]?.code ?? '')
     setIsQuestFormOpen(false)
   }
 
@@ -198,32 +208,20 @@ export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive
               value={questTitle}
             />
             <div className="mt-3 flex items-center gap-3">
-              <label className="relative flex h-[40px] flex-1 items-center rounded-[10px] bg-[#f8f8f8] px-[14px]">
-                <span className="sr-only">역량 분류</span>
-                <select
-                  className="h-full w-full appearance-none bg-transparent pr-8 text-base font-medium tracking-[-0.32px] outline-none"
-                  onChange={(event) => setQuestCategory(event.target.value)}
-                  value={questCategory}
-                >
-                  {competencyMetrics.map((metric) => (
-                    <option key={metric.key} value={metric.label}>{metric.label}</option>
-                  ))}
-                </select>
-                <img alt="" aria-hidden="true" className="pointer-events-none absolute right-[14px] h-[5px] w-[11.5px]" src={roadmapAssets.selectChevron} />
-              </label>
-              <label className="relative flex h-[40px] w-[143px] items-center rounded-[10px] bg-[#f8f8f8] px-[14px]">
-                <span className="sr-only">퀘스트 레벨</span>
-                <select
-                  className="h-full w-full appearance-none bg-transparent pr-8 text-base font-medium tracking-[-0.32px] outline-none"
-                  onChange={(event) => setQuestLevel(Number(event.target.value))}
-                  value={questLevel}
-                >
-                  {[1, 2, 3, 4, 5, 6].map((level) => (
-                    <option key={level} value={level}>레벨 {level}</option>
-                  ))}
-                </select>
-                <img alt="" aria-hidden="true" className="pointer-events-none absolute right-[14px] h-[5px] w-[11.5px]" src={roadmapAssets.selectChevron} />
-              </label>
+              <CustomSelect
+                ariaLabel="역량 분류"
+                className="flex-1"
+                onChange={setQuestAxisCode}
+                options={axes.map((axis) => ({ label: axis.name, value: axis.code }))}
+                value={questAxisCode}
+              />
+              <CustomSelect
+                ariaLabel="퀘스트 레벨"
+                className="w-[143px] shrink-0"
+                onChange={setQuestLevel}
+                options={levels.map((level) => ({ label: `레벨 ${level}`, value: level }))}
+                value={questLevel}
+              />
               <button
                 className="h-[40px] rounded-[10px] bg-[#58a9a3] px-[14px] text-base font-medium tracking-[-0.32px] text-white disabled:cursor-default disabled:opacity-50"
                 disabled={!canAddQuest}
@@ -245,8 +243,30 @@ export function RoadmapPage({ character, customQuests, onAddQuest, onOpenArchive
                 <span className="h-px flex-1 bg-[#e5e5e5]" />
               </div>
               <div className="flex flex-col gap-2.5">
-                {group.quests.map((quest) => (
-                  <RoadmapQuestCard key={quest.id} onOpenQuest={onOpenQuest} quest={quest} />
+                {group.quests.map((quest, index) => (
+                  <div className="flex items-center gap-2" key={quest.id}>
+                    <RoadmapQuestCard onOpenQuest={onOpenQuest} quest={quest} />
+                    <div className="flex shrink-0 flex-col gap-1">
+                      <button
+                        aria-label={`${quest.title} 위로 이동`}
+                        className="flex size-8 items-center justify-center rounded-lg border border-[#e5e5e5] bg-white text-sm disabled:cursor-default disabled:opacity-30"
+                        disabled={index === 0}
+                        onClick={() => onMoveQuest(quest, index - 1)}
+                        type="button"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        aria-label={`${quest.title} 아래로 이동`}
+                        className="flex size-8 items-center justify-center rounded-lg border border-[#e5e5e5] bg-white text-sm disabled:cursor-default disabled:opacity-30"
+                        disabled={index === group.quests.length - 1}
+                        onClick={() => onMoveQuest(quest, index + 1)}
+                        type="button"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>

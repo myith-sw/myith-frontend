@@ -53,6 +53,7 @@ export function CharacterNameStep({
           <input
             className="h-10 flex-1 rounded-[10px] border border-[#7dcecb] bg-white px-[10px] text-sm font-medium outline-none placeholder:text-black/50 focus:ring-2 focus:ring-[#7dcecb]/30"
             id="character-nickname"
+            maxLength={20}
             onChange={(event) => onNicknameChange(event.target.value)}
             placeholder="예: 견습 서버 개발자"
             value={nickname}

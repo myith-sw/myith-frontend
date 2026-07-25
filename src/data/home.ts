@@ -1,5 +1,4 @@
 import { homeAssets } from '../assets/home'
-import type { CharacterId, CharacterStage } from '../assets/characters'
 import type { CompetencyScores } from './archive'
 import type { CSSProperties } from 'react'
 
@@ -26,8 +25,9 @@ export interface MythCharacter extends SidebarCharacter {
   description: string
   progress: number
   nextQuest: string
-  characterId: CharacterId
-  stage: CharacterStage
+  nextQuestId?: string
+  characterId: string
+  stage: number
   competencies: CompetencyScores
 }
 

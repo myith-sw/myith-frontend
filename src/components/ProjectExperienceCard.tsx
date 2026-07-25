@@ -129,6 +129,11 @@ export function ProjectExperienceCard({
                 event.target.value = ''
                 return
               }
+              if (file.size > 10 * 1024 * 1024) {
+                setFileError('PDF 파일은 10MB 이하만 첨부할 수 있어요.')
+                event.target.value = ''
+                return
+              }
 
               setFileError('')
               onChange({ file })

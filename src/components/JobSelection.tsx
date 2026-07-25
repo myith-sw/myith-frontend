@@ -1,8 +1,9 @@
-import { jobCategories, type CategoryId, type JobOption } from '../data/onboarding'
+import type { CategoryId, JobCategory, JobOption } from '../data/onboarding'
 import { ComingSoonCard } from './ComingSoonCard'
 import { JobCard } from './JobCard'
 
 interface JobSelectionProps {
+  categories: JobCategory[]
   selectedCategoryId: CategoryId
   jobs: JobOption[]
   onSelectCategory: (categoryId: CategoryId) => void
@@ -10,6 +11,7 @@ interface JobSelectionProps {
 }
 
 export function JobSelection({
+  categories,
   selectedCategoryId,
   jobs,
   onSelectCategory,
@@ -29,7 +31,7 @@ export function JobSelection({
       </header>
 
       <div className="mt-[30px] flex flex-wrap gap-[6px]" aria-label="직무 분야">
-        {jobCategories.map((category) => {
+        {categories.map((category) => {
           const isActive = selectedCategoryId === category.id
 
           return (
@@ -60,9 +62,13 @@ export function JobSelection({
       </div>
 
       <div className="mt-[23px] grid grid-cols-1 items-stretch gap-[10px] min-[1200px]:grid-cols-2">
-        {availableJobs.map((job) => (
-          <JobCard job={job} key={job.id} onClick={() => onSelectJob(job)} />
-        ))}
+        {availableJobs.map((job) =>
+          job.available === false ? (
+            <ComingSoonCard key={job.id} />
+          ) : (
+            <JobCard job={job} key={job.id} onClick={() => onSelectJob(job)} />
+          ),
+        )}
         <ComingSoonCard />
       </div>
     </section>

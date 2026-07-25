@@ -10,16 +10,7 @@ export type OnboardingStep =
   | 'roadmap'
   | 'quest-detail'
 
-export type CategoryId =
-  | 'business'
-  | 'finance'
-  | 'sales'
-  | 'marketing'
-  | 'it'
-  | 'research'
-  | 'manufacturing'
-  | 'public'
-  | 'other'
+export type CategoryId = string
 
 export interface JobCategory {
   id: CategoryId
@@ -33,6 +24,7 @@ export interface JobOption {
   title: string
   description: string
   skills: string[]
+  available?: boolean
 }
 
 export type JobId = string
@@ -140,12 +132,17 @@ export const digitalMarketer = marketingJobs[0]
 
 export const assessmentLevels = ['모름', '들어봄', '해봄', '혼자 가능'] as const
 
-export type AssessmentLevel = (typeof assessmentLevels)[number]
+export type AssessmentLevel = string
 
 export interface AssessmentQuestion {
   id: string
   prompt: string
   initialAnswer: AssessmentLevel
+}
+
+export interface AssessmentOption {
+  id: string
+  label: string
 }
 
 export interface ProjectExperience {
