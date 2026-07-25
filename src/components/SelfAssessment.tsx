@@ -1,18 +1,37 @@
 import { homeAssets } from '../assets/home'
+import { assessmentAssets } from '../assets/assessment'
 import {
   assessmentLevels,
   assessmentQuestions,
   type AssessmentLevel,
+  type ProjectExperience,
 } from '../data/onboarding'
+import { ProjectExperienceCard } from './ProjectExperienceCard'
 
 interface SelfAssessmentProps {
   jobTitle: string
   answers: Record<string, AssessmentLevel>
+  projectExperiences: ProjectExperience[]
+  onAddProjectExperience: () => void
   onAnswerChange: (questionId: string, answer: AssessmentLevel) => void
+  onProjectExperienceChange: (
+    experienceId: string,
+    changes: Partial<Omit<ProjectExperience, 'id'>>,
+  ) => void
   onGenerateRoadmap: () => void
+  onRemoveProjectExperience: (experienceId: string) => void
 }
 
-export function SelfAssessment({ jobTitle, answers, onAnswerChange, onGenerateRoadmap }: SelfAssessmentProps) {
+export function SelfAssessment({
+  jobTitle,
+  answers,
+  projectExperiences,
+  onAddProjectExperience,
+  onAnswerChange,
+  onProjectExperienceChange,
+  onGenerateRoadmap,
+  onRemoveProjectExperience,
+}: SelfAssessmentProps) {
   return (
     <section className="w-full pb-10" aria-labelledby="self-assessment-title">
       <header className="flex flex-col gap-[10px]">
@@ -24,7 +43,7 @@ export function SelfAssessment({ jobTitle, answers, onAnswerChange, onGenerateRo
         </p>
       </header>
 
-      <div className="mt-[35px] flex flex-col gap-[25px]">
+      <div className="mt-10 flex flex-col gap-[30px]">
         {assessmentQuestions.map((question) => (
           <article className="rounded-[20px] bg-[#f7f7f7] p-5" key={question.id}>
             <h2 className="text-base font-semibold tracking-[-0.48px]">{question.prompt}</h2>
@@ -52,9 +71,31 @@ export function SelfAssessment({ jobTitle, answers, onAnswerChange, onGenerateRo
             </div>
           </article>
         ))}
+
+        {projectExperiences.map((experience, index) => (
+          <ProjectExperienceCard
+            canRemove={projectExperiences.length > 1}
+            experience={experience}
+            index={index}
+            key={experience.id}
+            onChange={(changes) => onProjectExperienceChange(experience.id, changes)}
+            onRemove={() => onRemoveProjectExperience(experience.id)}
+          />
+        ))}
+
+        <div className="flex w-full items-center justify-center">
+          <button
+            aria-label="프로젝트 경험 추가"
+            className="flex h-10 w-[400px] items-center justify-center rounded-[20px] bg-[#f7f7f7] transition-colors hover:bg-[#f0f0f0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
+            onClick={onAddProjectExperience}
+            type="button"
+          >
+            <img alt="" aria-hidden="true" className="size-10" src={assessmentAssets.projectAdd} />
+          </button>
+        </div>
       </div>
 
-      <div className="mt-[25px] flex justify-end">
+      <div className="mt-10 flex justify-end">
         <button
           className="flex h-10 items-center justify-center gap-2 rounded-[10px] bg-[#6bd8d5] px-5 text-sm font-medium text-white"
           onClick={onGenerateRoadmap}

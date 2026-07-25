@@ -148,6 +148,22 @@ export interface AssessmentQuestion {
   initialAnswer: AssessmentLevel
 }
 
+export interface ProjectExperience {
+  id: string
+  description: string
+  file: File | null
+  link: string
+}
+
+export function createEmptyProjectExperience(): ProjectExperience {
+  return {
+    id: crypto.randomUUID(),
+    description: '',
+    file: null,
+    link: '',
+  }
+}
+
 export const assessmentQuestions: AssessmentQuestion[] = [
   { id: 'environment', prompt: '개발환경을 구축할 수 있다', initialAnswer: '모름' },
   { id: 'toy-app', prompt: '언어 기초로 토이앱을 만든다', initialAnswer: '들어봄' },

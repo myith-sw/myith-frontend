@@ -17,6 +17,7 @@ import {
 import { mythCharacters, type EggId } from './data/home'
 import { getRoadmapQuestGroups, type RoadmapCharacter, type RoadmapQuest } from './data/roadmap'
 import {
+  createEmptyProjectExperience,
   digitalMarketer,
   initialAssessmentAnswers,
   availableJobs,
@@ -24,6 +25,7 @@ import {
   type CategoryId,
   type JobId,
   type OnboardingStep,
+  type ProjectExperience,
 } from './data/onboarding'
 
 function App() {
@@ -34,6 +36,9 @@ function App() {
   const [selectedJobId, setSelectedJobId] = useState<JobId | null>(null)
   const [nickname, setNickname] = useState('')
   const [assessmentAnswers, setAssessmentAnswers] = useState(initialAssessmentAnswers)
+  const [projectExperiences, setProjectExperiences] = useState<ProjectExperience[]>(() => [
+    createEmptyProjectExperience(),
+  ])
   const [roadmapTarget, setRoadmapTarget] = useState<{ kind: 'existing'; id: string } | { kind: 'draft' }>({
     kind: 'existing',
     id: mythCharacters[0].id,
@@ -337,6 +342,13 @@ function App() {
       <SelfAssessment
         answers={assessmentAnswers}
         jobTitle={(selectedJob ?? digitalMarketer).title}
+        projectExperiences={projectExperiences}
+        onAddProjectExperience={() =>
+          setProjectExperiences((currentExperiences) => [
+            ...currentExperiences,
+            createEmptyProjectExperience(),
+          ])
+        }
         onGenerateRoadmap={() => {
           setRoadmapTarget({ kind: 'draft' })
           setStep('roadmap')
@@ -346,6 +358,20 @@ function App() {
             ...currentAnswers,
             [questionId]: answer as AssessmentLevel,
           }))
+        }
+        onProjectExperienceChange={(experienceId, changes) =>
+          setProjectExperiences((currentExperiences) =>
+            currentExperiences.map((experience) =>
+              experience.id === experienceId ? { ...experience, ...changes } : experience,
+            ),
+          )
+        }
+        onRemoveProjectExperience={(experienceId) =>
+          setProjectExperiences((currentExperiences) =>
+            currentExperiences.length > 1
+              ? currentExperiences.filter((experience) => experience.id !== experienceId)
+              : currentExperiences,
+          )
         }
       />
     </AppShell>
