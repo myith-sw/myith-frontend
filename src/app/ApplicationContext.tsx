@@ -14,7 +14,7 @@ import { ApplicationContext, type OnboardingState } from './applicationContextVa
 
 const initialOnboarding: OnboardingState = {
   selectedEggId: null,
-  selectedCategoryId: 'marketing',
+  selectedCategoryId: 'business',
   selectedJob: null,
   nickname: '',
   diagnosis: null,
