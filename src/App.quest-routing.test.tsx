@@ -5,6 +5,8 @@ import App from './App'
 import { getQuest } from './api/endpoints'
 import type { QuestDetail } from './api/types'
 
+const refreshCharacters = vi.hoisted(() => vi.fn(async () => {}))
+
 vi.mock('./api/endpoints', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./api/endpoints')>()),
   getQuest: vi.fn(),
@@ -53,7 +55,7 @@ vi.mock('./app/useApplication', () => ({
       selectedEggId: null,
       selectedJob: null,
     },
-    refreshCharacters: vi.fn(),
+    refreshCharacters,
     resetOnboarding: vi.fn(),
     setOnboarding: vi.fn(),
   }),
@@ -95,9 +97,17 @@ afterEach(cleanup)
 
 beforeEach(() => {
   mockGetQuest.mockReset()
+  refreshCharacters.mockClear()
 })
 
 describe('quest sidebar routing', () => {
+  it('revalidates sidebar characters when the route screen opens', async () => {
+    mockGetQuest.mockReturnValue(new Promise(() => {}))
+    renderApp('/roadmaps/rmp_alpha/quests/qst_1')
+
+    await waitFor(() => expect(refreshCharacters).toHaveBeenCalledTimes(1))
+  })
+
   it('selects the route character before the quest response arrives', () => {
     mockGetQuest.mockReturnValue(new Promise(() => {}))
     renderApp('/roadmaps/rmp_alpha/quests/qst_1')
@@ -137,5 +147,6 @@ describe('quest sidebar routing', () => {
     expect(screen.getByRole('button', { name: '베타 아카이브 열기' })).toHaveClass(
       'border-[#7dcecb]',
     )
+    await waitFor(() => expect(refreshCharacters).toHaveBeenCalledTimes(2))
   })
 })

@@ -554,6 +554,7 @@ function useRoadmapDetail(roadmapId: string | undefined) {
 function RoadmapRoute() {
   const navigate = useNavigate()
   const { roadmapId } = useParams()
+  const { refreshCharacters } = useApplication()
   const { data, error, load, loading } = useRoadmapDetail(roadmapId)
   const [mutationError, setMutationError] = useState('')
 
@@ -619,7 +620,7 @@ function RoadmapRoute() {
           onAddQuest={(input) => {
             setMutationError('')
             void addQuest(roadmapId, input)
-              .then(() => load())
+              .then(() => Promise.all([load(), refreshCharacters()]))
               .catch((nextError) => setMutationError(errorMessage(nextError, '퀘스트 추가에 실패했습니다.')))
           }}
           onOpenArchive={() => navigate(`/roadmaps/${roadmapId}/archive`)}
@@ -634,6 +635,7 @@ function RoadmapRoute() {
 function QuestRoute() {
   const navigate = useNavigate()
   const { questId, roadmapId: routeRoadmapId } = useParams()
+  const { refreshCharacters } = useApplication()
   const [quest, setQuest] = useState<QuestDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -722,7 +724,9 @@ function QuestRoute() {
             }
           }}
           onDirtyChange={setHasUnsavedChanges}
-          onUpdated={() => void load()}
+          onUpdated={() => {
+            void Promise.all([load(), refreshCharacters()])
+          }}
           quest={quest}
         />
       )}

@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -28,30 +29,61 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
   const [charactersLoading, setCharactersLoading] = useState(false)
   const [charactersError, setCharactersError] = useState('')
   const [onboarding, setOnboarding] = useState<OnboardingState>(initialOnboarding)
+  const activeUserKey = user?.id ?? user?.email ?? ''
+  const activeUserKeyRef = useRef(activeUserKey)
+  const refreshSequenceRef = useRef(0)
+  activeUserKeyRef.current = activeUserKey
 
   const refreshCharacters = useCallback(async () => {
-    if (!user) {
+    if (!activeUserKey) {
+      refreshSequenceRef.current += 1
       setCharacters([])
+      setCharactersError('')
       setCharactersLoaded(false)
       setCharactersLoading(false)
       return
     }
 
+    const requestSequence = ++refreshSequenceRef.current
     setCharactersLoading(true)
     setCharactersError('')
     try {
-      setCharacters(await getCharacters())
+      const nextCharacters = await getCharacters()
+      if (
+        activeUserKeyRef.current === activeUserKey &&
+        refreshSequenceRef.current === requestSequence
+      ) {
+        setCharacters(nextCharacters)
+      }
     } catch (error) {
-      setCharactersError(error instanceof Error ? error.message : '캐릭터를 불러오지 못했습니다.')
+      if (
+        activeUserKeyRef.current === activeUserKey &&
+        refreshSequenceRef.current === requestSequence
+      ) {
+        setCharactersError(
+          error instanceof Error ? error.message : '캐릭터를 불러오지 못했습니다.',
+        )
+      }
     } finally {
-      setCharactersLoaded(true)
-      setCharactersLoading(false)
+      if (
+        activeUserKeyRef.current === activeUserKey &&
+        refreshSequenceRef.current === requestSequence
+      ) {
+        setCharactersLoaded(true)
+        setCharactersLoading(false)
+      }
     }
-  }, [user])
+  }, [activeUserKey])
 
   useEffect(() => {
-    void refreshCharacters()
-  }, [refreshCharacters])
+    if (activeUserKey) return
+
+    refreshSequenceRef.current += 1
+    setCharacters([])
+    setCharactersError('')
+    setCharactersLoaded(false)
+    setCharactersLoading(false)
+  }, [activeUserKey])
 
   const resetOnboarding = useCallback(() => {
     setOnboarding({
