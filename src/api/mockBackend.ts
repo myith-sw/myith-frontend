@@ -276,6 +276,21 @@ export async function mockFetch(input: string, init: RequestInit = {}) {
     })
   }
 
+  const axesMatch = path.match(/^\/api\/jobs\/([^/]+)\/axes$/)
+  if (axesMatch && method === 'GET') {
+    const axes = Array.from(
+      new Map(
+        initialRoadmapQuestGroups.flatMap((group) =>
+          group.quests.map((quest) => [
+            axisCode(quest.category),
+            { axisCode: axisCode(quest.category), axisName: quest.category },
+          ] as const),
+        ),
+      ).values(),
+    )
+    return json({ data: { jobCode: decodeURIComponent(axesMatch[1]), axes } })
+  }
+
   if (path === '/api/uploads/presign' && method === 'POST') {
     if (body?.contentType !== 'application/pdf') return apiError('UNSUPPORTED_FILE_TYPE', 'PDF만 업로드할 수 있습니다.', 400)
     return json({

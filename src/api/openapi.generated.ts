@@ -121,6 +121,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jobs/{jobCode}/axes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 직무별 역량 축 조회
+         * @description 아카이브의 역량 다각형 축과 경험 카드 역량 필터 목록에 사용한다.
+         */
+        get: operations["getJobAxes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/uploads/presign": {
         parameters: {
             query?: never;
@@ -674,6 +694,14 @@ export interface components {
             keywords?: string[];
             /** @description false면 화면 2에서 '준비중' 잠긴 카드 */
             available?: boolean;
+        };
+        JobAxesResponse: {
+            jobCode: string;
+            axes: components["schemas"]["JobAxis"][];
+        };
+        JobAxis: {
+            axisCode: string;
+            axisName: string;
         };
         DiagnosisResponse: {
             jobCode?: string;
@@ -1320,6 +1348,67 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getJobAxes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description 직무 코드
+                 * @example server
+                 */
+                jobCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "jobCode": "backend",
+                     *         "axes": [
+                     *           {
+                     *             "axisCode": "programming",
+                     *             "axisName": "프로그래밍기초"
+                     *           },
+                     *           {
+                     *             "axisCode": "cs",
+                     *             "axisName": "CS·자료구조"
+                     *           },
+                     *           {
+                     *             "axisCode": "data-io",
+                     *             "axisName": "데이터입출력"
+                     *           },
+                     *           {
+                     *             "axisCode": "server-api",
+                     *             "axisName": "서버·API"
+                     *           },
+                     *           {
+                     *             "axisCode": "collab",
+                     *             "axisName": "협업·형상관리"
+                     *           },
+                     *           {
+                     *             "axisCode": "devops",
+                     *             "axisName": "배포·운영"
+                     *           }
+                     *         ]
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data?: components["schemas"]["JobAxesResponse"];
+                    };
                 };
             };
         };

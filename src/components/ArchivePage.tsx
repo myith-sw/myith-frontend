@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { homeAssets } from '../assets/home'
 import {
   archiveSkillGroups,
@@ -6,6 +6,7 @@ import {
   competencyMetrics,
   experienceEntries,
   type ArchiveCharacter,
+  type ArchiveExperienceAxis,
   type ArchiveExperienceEntry,
   type ArchiveSkill,
   type ArchiveSkillGroup,
@@ -13,21 +14,13 @@ import {
 import { CompetencyRadar } from './CompetencyRadar'
 import type { RadarAxisScore } from './CompetencyRadar'
 
-type ExperienceLevelFilter = 'all' | 1 | 2 | 3 | 4
-
-const experienceLevelFilters: { label: string; value: ExperienceLevelFilter }[] = [
-  { label: '전체', value: 'all' },
-  { label: 'Lv.1 입문 단계', value: 1 },
-  { label: 'Lv.2 견습 단계', value: 2 },
-  { label: 'Lv.3 성장 단계', value: 3 },
-  { label: 'Lv.4 전설 단계', value: 4 },
-]
-
 interface ArchivePageProps {
   character: ArchiveCharacter
   completedCount?: number
+  experienceAxes?: ArchiveExperienceAxis[]
   experiences?: ArchiveExperienceEntry[]
   onOpenRoadmap: () => void
+  onOpenQuest?: (questId: string) => void
   onExport?: (format: 'md' | 'pdf') => void
   radar?: RadarAxisScore[]
   skillGroups?: ArchiveSkillGroup[]
@@ -78,9 +71,15 @@ function SkillCard({ skill }: { skill: ArchiveSkill }) {
   )
 }
 
-function ExperienceCard({ entry }: { entry: ArchiveExperienceEntry }) {
+function ExperienceCard({
+  entry,
+  onOpenQuest,
+}: {
+  entry: ArchiveExperienceEntry
+  onOpenQuest?: (questId: string) => void
+}) {
   return (
-    <article className="h-[277px] overflow-hidden rounded-[20px] bg-white px-[30px] pt-[21px]">
+    <article className="relative h-[277px] overflow-hidden rounded-[20px] bg-white px-[30px] pt-[21px]">
       <div className="flex items-center gap-2">
         {entry.level !== undefined && entry.levelLabel && (
           <span className="inline-flex rounded-[20px] bg-[#f8f8f8] px-2.5 py-[5px] text-xs font-semibold tracking-[-0.36px] text-[#878787]">
@@ -103,6 +102,14 @@ function ExperienceCard({ entry }: { entry: ArchiveExperienceEntry }) {
         ))}
       </div>
       <div className="mt-[18px] border-t border-[#e5e5e5]" />
+      {entry.questId && onOpenQuest && (
+        <button
+          aria-label={`${entry.title} 퀘스트 열기`}
+          className="absolute inset-0 rounded-[20px] transition-colors hover:bg-black/[0.01] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
+          onClick={() => onOpenQuest(entry.questId!)}
+          type="button"
+        />
+      )}
     </article>
   )
 }
@@ -110,22 +117,45 @@ function ExperienceCard({ entry }: { entry: ArchiveExperienceEntry }) {
 export function ArchivePage({
   character,
   completedCount = 2,
+  experienceAxes = [],
   experiences = experienceEntries,
   onOpenRoadmap,
+  onOpenQuest,
   onExport,
   radar,
   skillGroups = archiveSkillGroups,
 }: ArchivePageProps) {
-  const [activeExperienceLevel, setActiveExperienceLevel] = useState<ExperienceLevelFilter>('all')
+  const [activeExperienceAxis, setActiveExperienceAxis] = useState('all')
+  const availableExperienceAxes = useMemo(
+    () =>
+      experienceAxes.length > 0
+        ? experienceAxes
+        : Array.from(
+            new Map(
+              experiences
+                .filter((entry) => entry.axisCode)
+                .map((entry) => [entry.axisCode!, { code: entry.axisCode!, label: entry.category }]),
+            ).values(),
+          ),
+    [experienceAxes, experiences],
+  )
+  useEffect(() => {
+    if (
+      activeExperienceAxis !== 'all' &&
+      !availableExperienceAxes.some((axis) => axis.code === activeExperienceAxis)
+    ) {
+      setActiveExperienceAxis('all')
+    }
+  }, [activeExperienceAxis, availableExperienceAxes])
   const competencyScores = radar ?? competencyMetrics.map(({ key, label }) => ({
     key,
     label,
     value: clampCompetencyScore(character.competencies[key]),
   }))
   const filteredExperiences =
-    activeExperienceLevel === 'all'
+    activeExperienceAxis === 'all'
       ? experiences
-      : experiences.filter((entry) => entry.level === activeExperienceLevel)
+      : experiences.filter((entry) => entry.axisCode === activeExperienceAxis)
 
   return (
     <section className="w-full pb-24">
@@ -230,9 +260,9 @@ export function ArchivePage({
         </span>
       </div>
       {experiences.length > 0 && (
-        <div aria-label="경험 카드 레벨 필터" className="mt-4 flex flex-wrap items-center gap-2.5 pl-5">
-          {experienceLevelFilters.map((filter) => {
-            const isActive = activeExperienceLevel === filter.value
+        <div aria-label="경험 카드 역량 필터" className="mt-4 flex flex-wrap items-center gap-2.5 pl-5">
+          {[{ code: 'all', label: '전체' }, ...availableExperienceAxes].map((filter) => {
+            const isActive = activeExperienceAxis === filter.code
 
             return (
               <button
@@ -240,8 +270,8 @@ export function ArchivePage({
                 className={`rounded-[20px] px-[15px] py-[6px] text-xs font-semibold tracking-[-0.36px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3] ${
                   isActive ? 'bg-[#7dcecb] text-white' : 'bg-white text-black'
                 }`}
-                key={filter.value}
-                onClick={() => setActiveExperienceLevel(filter.value)}
+                key={filter.code}
+                onClick={() => setActiveExperienceAxis(filter.code)}
                 type="button"
               >
                 {filter.label}
@@ -252,10 +282,16 @@ export function ArchivePage({
       )}
       <div className={`${experiences.length > 0 ? 'mt-3' : 'mt-[29px]'} grid grid-cols-2 gap-5`}>
         {filteredExperiences.length > 0 ? (
-          filteredExperiences.map((entry, index) => <ExperienceCard entry={entry} key={index} />)
+          filteredExperiences.map((entry, index) => (
+            <ExperienceCard
+              entry={entry}
+              key={entry.questId ?? `${entry.title}-${index}`}
+              onOpenQuest={onOpenQuest}
+            />
+          ))
         ) : (
           <article className="col-span-2 flex h-[188px] items-center justify-center rounded-[20px] bg-white text-sm font-medium tracking-[-0.28px] text-black/40">
-            {experiences.length > 0 ? '해당 단계에 기록된 경험이 없어요' : '아직 기록된 경험이 없어요'}
+            {experiences.length > 0 ? '해당 역량에 기록된 경험이 없어요' : '아직 기록된 경험이 없어요'}
           </article>
         )}
       </div>

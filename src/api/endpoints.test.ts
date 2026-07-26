@@ -5,6 +5,7 @@ import {
   completeQuest,
   createRoadmap,
   getHealth,
+  getJobAxes,
   getStarRecords,
 } from './endpoints'
 
@@ -93,6 +94,31 @@ describe('Swagger-compatible endpoints', () => {
     await expect(getStarRecords({ size: 20 })).resolves.toEqual({
       data: [],
       meta: { nextCursor: 'next-page', hasNext: true },
+    })
+  })
+
+  it('직무 코드를 인코딩해 역량 축 목록을 조회한다', async () => {
+    server.use(
+      http.get('http://localhost/api/jobs/:jobCode/axes', ({ params }) => {
+        expect(params.jobCode).toBe('server backend')
+        return HttpResponse.json({
+          data: {
+            jobCode: 'server backend',
+            axes: [
+              { axisCode: 'programming', axisName: '프로그래밍 기초' },
+              { axisCode: 'server-api', axisName: '서버·API' },
+            ],
+          },
+        })
+      }),
+    )
+
+    await expect(getJobAxes('server backend')).resolves.toEqual({
+      jobCode: 'server backend',
+      axes: [
+        { axisCode: 'programming', axisName: '프로그래밍 기초' },
+        { axisCode: 'server-api', axisName: '서버·API' },
+      ],
     })
   })
 

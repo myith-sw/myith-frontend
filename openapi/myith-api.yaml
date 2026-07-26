@@ -311,6 +311,41 @@ paths:
                   message: 해당 직무의 프로필이 아직 준비되지 않았습니다.
                   requestId: req_01J3ABC
 
+  /api/jobs/{jobCode}/axes:
+    get:
+      tags: [Catalog]
+      summary: 직무별 역량 축 조회
+      operationId: getJobAxes
+      description: "아카이브의 역량 다각형 축과 경험 카드 역량 필터 목록에 사용한다."
+      parameters:
+        - name: jobCode
+          in: path
+          required: true
+          description: 직무 코드
+          schema:
+            type: string
+          example: server
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/JobAxesResponse'
+              example:
+                data:
+                  jobCode: backend
+                  axes:
+                    - { axisCode: programming, axisName: "프로그래밍기초" }
+                    - { axisCode: cs, axisName: "CS·자료구조" }
+                    - { axisCode: data-io, axisName: "데이터입출력" }
+                    - { axisCode: server-api, axisName: "서버·API" }
+                    - { axisCode: collab, axisName: "협업·형상관리" }
+                    - { axisCode: devops, axisName: "배포·운영" }
+
   # ═══════════════════ Upload ═══════════════════
   /api/uploads/presign:
     post:
@@ -1503,6 +1538,24 @@ components:
         available:
           type: boolean
           description: "false면 화면 2에서 '준비중' 잠긴 카드"
+    JobAxesResponse:
+      type: object
+      required: [jobCode, axes]
+      properties:
+        jobCode:
+          type: string
+        axes:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobAxis'
+    JobAxis:
+      type: object
+      required: [axisCode, axisName]
+      properties:
+        axisCode:
+          type: string
+        axisName:
+          type: string
     DiagnosisResponse:
       type: object
       properties:

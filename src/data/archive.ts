@@ -36,11 +36,42 @@ export interface ArchiveCharacter {
 }
 
 export interface ArchiveExperienceEntry {
+  questId?: string
+  axisCode?: string
   category: string
   level?: number
   levelLabel?: string
   title: string
   entries: [string, string][]
+}
+
+export interface ArchiveExperienceAxis {
+  code: string
+  label: string
+}
+
+export function resolveArchiveExperienceAxes(
+  apiAxes: readonly ArchiveExperienceAxis[],
+  radarAxes: readonly ArchiveExperienceAxis[],
+  experiences: readonly ArchiveExperienceEntry[],
+) {
+  const source =
+    apiAxes.length > 0
+      ? apiAxes
+      : [
+          ...radarAxes,
+          ...experiences
+            .filter((entry) => entry.axisCode)
+            .map((entry) => ({ code: entry.axisCode!, label: entry.category })),
+        ]
+
+  return Array.from(
+    new Map(
+      source
+        .filter((axis) => axis.code && axis.label)
+        .map((axis) => [axis.code, axis] as const),
+    ).values(),
+  )
 }
 
 export const archiveLevelLabels: Record<number, string> = {
@@ -156,6 +187,7 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
 
 export const experienceEntries: ArchiveExperienceEntry[] = [
   {
+    axisCode: 'programming',
     category: '프로그래밍 기초',
     level: 1,
     levelLabel: archiveLevelLabels[1],
@@ -168,6 +200,7 @@ export const experienceEntries: ArchiveExperienceEntry[] = [
     ],
   },
   {
+    axisCode: 'programming',
     category: '프로그래밍 기초',
     level: 1,
     levelLabel: archiveLevelLabels[1],

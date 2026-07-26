@@ -22,6 +22,7 @@ import type {
   GoogleLoginResponse,
   HealthResponse,
   HeartbeatResponse,
+  JobAxesResponse,
   JobListResponse,
   PresignResponse,
   QuestDetail,
@@ -80,6 +81,10 @@ export function getHealth() {
 
 export function getJobs() {
   return apiRequest<JobListResponse>('/api/jobs')
+}
+
+export function getJobAxes(jobCode: string) {
+  return apiRequest<JobAxesResponse>(`/api/jobs/${encodeURIComponent(jobCode)}/axes`)
 }
 
 export function getDiagnosis(jobCode: string) {

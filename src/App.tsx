@@ -12,6 +12,7 @@ import {
   downloadRoadmapExport,
   getDashboard,
   getDiagnosis,
+  getJobAxes,
   getJobs,
   getQuest,
   getRoadmap,
@@ -23,6 +24,7 @@ import { prepareRoadmapEvidence } from './api/roadmapPayload'
 import type {
   CharacterSummary,
   DashboardResponse,
+  JobAxis,
   QuestDetail,
   RoadmapDetail,
 } from './api/types'
@@ -44,7 +46,9 @@ import { SelfAssessment } from './components/SelfAssessment'
 import { Sidebar } from './components/Sidebar'
 import {
   archiveLevelLabels,
+  resolveArchiveExperienceAxes,
   type ArchiveCharacter,
+  type ArchiveExperienceAxis,
   type ArchiveExperienceEntry,
   type ArchiveSkillStatus,
   type ArchiveSkillGroup,
@@ -656,9 +660,13 @@ function QuestRoute() {
 function ArchiveRoute() {
   const navigate = useNavigate()
   const { roadmapId } = useParams()
+  const { characters } = useApplication()
   const [data, setData] = useState<DashboardResponse | null>(null)
+  const [jobAxes, setJobAxes] = useState<JobAxis[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const activeCharacter = characters.find((character) => character.roadmapId === roadmapId)
+  const jobCode = activeCharacter?.jobCode
 
   const load = useCallback(async () => {
     if (!roadmapId) return
@@ -676,6 +684,30 @@ function ArchiveRoute() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    let cancelled = false
+
+    setJobAxes([])
+    if (!jobCode) return
+
+    void getJobAxes(jobCode)
+      .then((response) => {
+        if (!cancelled) {
+          setJobAxes(response.axes)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setJobAxes([])
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [jobCode])
+
   if (!roadmapId) return <Navigate replace to="/" />
 
   const character: ArchiveCharacter | null = data
@@ -709,6 +741,8 @@ function ArchiveRoute() {
     const level = entry.questId ? experienceLevelByQuestId.get(entry.questId) : undefined
 
     return {
+      questId: entry.questId,
+      axisCode: entry.axisCode,
       category: entry.axisName ?? '',
       level,
       levelLabel: level === undefined ? undefined : archiveLevelLabels[level],
@@ -721,10 +755,36 @@ function ArchiveRoute() {
       ],
     }
   })
-  const radar = (data?.radar ?? []).map((axis) => ({
-    key: axis.axisCode ?? axis.axisName ?? crypto.randomUUID(),
-    label: axis.axisName ?? '',
-    value: axis.percent ?? 0,
+  const apiExperienceAxes: ArchiveExperienceAxis[] = jobAxes.map((axis) => ({
+    code: axis.axisCode,
+    label: axis.axisName,
+  }))
+  const dashboardRadarAxes: ArchiveExperienceAxis[] = (data?.radar ?? [])
+    .filter((axis) => axis.axisCode && axis.axisName)
+    .map((axis) => ({
+      code: axis.axisCode!,
+      label: axis.axisName!,
+    }))
+  const experienceAxes = resolveArchiveExperienceAxes(
+    apiExperienceAxes,
+    dashboardRadarAxes,
+    experiences,
+  )
+  const radarScoreByCode = new Map(
+    (data?.radar ?? [])
+      .filter((axis) => axis.axisCode)
+      .map((axis) => [axis.axisCode!, axis.percent ?? 0] as const),
+  )
+  const radarAxisOrder =
+    apiExperienceAxes.length > 0
+      ? apiExperienceAxes
+      : dashboardRadarAxes.length > 0
+        ? dashboardRadarAxes
+        : experienceAxes
+  const radar = radarAxisOrder.map((axis) => ({
+    key: axis.code,
+    label: axis.label,
+    value: radarScoreByCode.get(axis.code) ?? 0,
   }))
 
   return (
@@ -737,6 +797,7 @@ function ArchiveRoute() {
         <ArchivePage
           character={character}
           completedCount={data.character?.completedQuestCount}
+          experienceAxes={experienceAxes}
           experiences={experiences}
           onExport={(format) => {
             setError('')
@@ -745,6 +806,7 @@ function ArchiveRoute() {
             )
           }}
           onOpenRoadmap={() => navigate(`/roadmaps/${roadmapId}`)}
+          onOpenQuest={(questId) => navigate(questDetailPath(roadmapId, questId))}
           radar={radar}
           skillGroups={skillGroups}
         />
