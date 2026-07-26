@@ -3,6 +3,7 @@ import type { AssessmentLevel } from './onboarding'
 export type ArchiveSkillStatus = 'complete' | 'incomplete' | 'locked'
 
 export interface ArchiveSkill {
+  questId?: string
   category: string
   status: ArchiveSkillStatus
   title: string

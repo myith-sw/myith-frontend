@@ -26,7 +26,9 @@ interface ArchivePageProps {
   skillGroups?: ArchiveSkillGroup[]
 }
 
-function SkillCard({ skill }: { skill: ArchiveSkill }) {
+function SkillCard({ onOpenQuest, skill }: { onOpenQuest?: (questId: string) => void; skill: ArchiveSkill }) {
+  const isLocked = skill.status === 'locked'
+  const canOpen = Boolean(skill.questId && onOpenQuest) && !isLocked
   const styles = {
     complete: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
     incomplete: 'border-[#ffe3aa] bg-[#faf4e7]',
@@ -40,7 +42,16 @@ function SkillCard({ skill }: { skill: ArchiveSkill }) {
   }[skill.status]
 
   return (
-    <div className={`flex min-h-[75px] items-center justify-between rounded-[20px] border-[1.2px] p-4 ${styles}`}>
+    <button
+      aria-disabled={isLocked}
+      aria-label={isLocked ? `${skill.title} (잠김)` : skill.title}
+      className={`flex min-h-[75px] w-full items-center justify-between rounded-[20px] border-[1.2px] p-4 text-left transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3] ${styles} ${canOpen ? 'cursor-pointer hover:-translate-y-px' : 'cursor-default'}`}
+      disabled={!canOpen}
+      onClick={() => {
+        if (skill.questId && onOpenQuest) onOpenQuest(skill.questId)
+      }}
+      type="button"
+    >
       <div className="flex min-w-0 items-center gap-3">
         <img
           alt=""
@@ -63,7 +74,7 @@ function SkillCard({ skill }: { skill: ArchiveSkill }) {
         src={homeAssets.archiveSkillChevron}
         width={5.349}
       />
-    </div>
+    </button>
   )
 }
 
@@ -231,7 +242,7 @@ export function ArchivePage({
                   </div>
                   <div className="flex flex-col gap-2.5">
                     {group.skills.map((skill) => (
-                      <SkillCard key={`${skill.category}-${skill.title}`} skill={skill} />
+                      <SkillCard key={skill.questId ?? `${skill.category}-${skill.title}`} onOpenQuest={onOpenQuest} skill={skill} />
                     ))}
                   </div>
                 </section>

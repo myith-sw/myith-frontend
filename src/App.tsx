@@ -800,6 +800,7 @@ function ArchiveRoute() {
     level: group.level ?? 1,
     label: archiveLevelLabels[group.level ?? 1] ?? '',
     skills: (group.quests ?? []).map((quest) => ({
+      questId: quest.questId,
       category: quest.axisName ?? '',
       status: toArchiveSkillStatus(quest.status),
       title: quest.title ?? '',

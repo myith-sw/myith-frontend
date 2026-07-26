@@ -101,6 +101,24 @@ describe('ArchivePage experience cards', () => {
     expect(locked).toHaveClass('border-transparent', 'bg-[#f6f6f6]', 'text-black/50')
   })
 
+  it('스킬 트리의 열린 퀘스트를 클릭하면 해당 퀘스트로 이동한다', () => {
+    const onOpenQuest = vi.fn()
+    renderArchive(onOpenQuest, [
+      {
+        level: 1,
+        label: '',
+        skills: [
+          { questId: 'qst_open', category: '프로그래밍 기초', status: 'incomplete', title: '열린 스킬' },
+          { questId: 'qst_locked', category: '프로그래밍 기초', status: 'locked', title: '잠긴 스킬' },
+        ],
+      },
+    ])
+
+    fireEvent.click(screen.getByRole('button', { name: '열린 스킬' }))
+    expect(onOpenQuest).toHaveBeenCalledWith('qst_open')
+    expect(screen.getByRole('button', { name: '잠긴 스킬 (잠김)' })).toBeDisabled()
+  })
+
   it('경험 카드에 레벨과 역량 칩을 표시하고 레벨 누락 데이터는 분야 칩만 표시한다', () => {
     renderArchive()
 
