@@ -3,6 +3,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useBlocker,
   useNavigate,
   useParams,
 } from 'react-router-dom'
@@ -73,7 +74,7 @@ import {
   questDetailPath,
   resolveQuestRoadmapId,
 } from './routing/questRoutes'
-import { confirmDiscardChanges, unsavedChangesMessage } from './routing/unsavedChanges'
+import { unsavedChangesMessage } from './routing/unsavedChanges'
 
 const emptyCompetencies: CompetencyScores = {
   programming: 0,
@@ -636,9 +637,12 @@ function QuestRoute() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const confirmNavigation = useCallback(
-    () => confirmDiscardChanges(hasUnsavedChanges),
-    [hasUnsavedChanges],
+  const blocker = useBlocker(
+    useCallback(
+      ({ currentLocation, nextLocation }) =>
+        hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+      [hasUnsavedChanges],
+    ),
   )
 
   const load = useCallback(async () => {
@@ -665,20 +669,22 @@ function QuestRoute() {
       event.preventDefault()
       event.returnValue = unsavedChangesMessage
     }
-    const handlePopState = () => {
-      if (!window.confirm(unsavedChangesMessage)) {
-        window.history.forward()
-      }
-    }
-
     window.addEventListener('beforeunload', handleBeforeUnload)
-    window.addEventListener('popstate', handlePopState)
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
-      window.removeEventListener('popstate', handlePopState)
     }
   }, [hasUnsavedChanges])
+
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return
+
+    if (window.confirm(unsavedChangesMessage)) {
+      blocker.proceed()
+    } else {
+      blocker.reset()
+    }
+  }, [blocker])
 
   const activeRoadmapId = resolveQuestRoadmapId(routeRoadmapId, quest?.roadmapId)
 
@@ -705,7 +711,6 @@ function QuestRoute() {
       sidebar={
         <CharacterSidebar
           activeRoadmapId={activeRoadmapId}
-          onBeforeNavigate={confirmNavigation}
           onHome={() => navigate('/')}
         />
       }

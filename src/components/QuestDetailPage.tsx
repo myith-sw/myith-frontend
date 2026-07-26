@@ -3,7 +3,6 @@ import { completeQuest, pollAiEnhancement, requestAiEnhancement, saveStar } from
 import type { QuestDetail, StarInput } from '../api/types'
 import { homeAssets } from '../assets/home'
 import { questDetailAssets } from '../assets/quest-detail'
-import { confirmDiscardChanges } from '../routing/unsavedChanges'
 import { AIAssistModal, type StarRecord } from './AIAssistModal'
 
 interface QuestDetailPageProps {
@@ -146,11 +145,7 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
     <section className="w-full pb-24">
       <button
         className="flex items-center gap-[6px] text-sm font-medium tracking-[-0.28px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
-        onClick={() => {
-          if (confirmDiscardChanges(isDirty)) {
-            onBack()
-          }
-        }}
+        onClick={onBack}
         type="button"
       >
         <img alt="" aria-hidden="true" className="h-2.5 w-[11.6px] rotate-180" src={homeAssets.archiveBackArrow} />

@@ -1,6 +1,6 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { createMemoryRouter, RouterProvider, useLocation } from 'react-router-dom'
 import App from './App'
 import { getQuest } from './api/endpoints'
 import type { QuestDetail } from './api/types'
@@ -68,13 +68,26 @@ function LocationProbe() {
   return <output data-testid="location">{location.pathname}</output>
 }
 
-function renderApp(path: string) {
-  return render(
-    <MemoryRouter initialEntries={[path]}>
-      <App />
-      <LocationProbe />
-    </MemoryRouter>,
+function renderApp(path: string, previousPath?: string) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: (
+          <>
+            <App />
+            <LocationProbe />
+          </>
+        ),
+        path: '*',
+      },
+    ],
+    {
+      initialEntries: previousPath ? [previousPath, path] : [path],
+      initialIndex: previousPath ? 1 : 0,
+    },
   )
+
+  return { router, ...render(<RouterProvider router={router} />) }
 }
 
 function quest(overrides: Partial<QuestDetail> = {}): QuestDetail {
@@ -93,7 +106,10 @@ function quest(overrides: Partial<QuestDetail> = {}): QuestDetail {
   }
 }
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+})
 
 beforeEach(() => {
   mockGetQuest.mockReset()
@@ -148,5 +164,72 @@ describe('quest sidebar routing', () => {
       'border-[#7dcecb]',
     )
     await waitFor(() => expect(refreshCharacters).toHaveBeenCalledTimes(2))
+  })
+
+  it('blocks the roadmap button until unsaved STAR changes are confirmed', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    mockGetQuest.mockResolvedValue(quest())
+    renderApp('/roadmaps/rmp_alpha/quests/qst_1')
+
+    const situation = await screen.findByLabelText(/상황 \(Situation\)/)
+    fireEvent.change(situation, { target: { value: '저장 전 상황' } })
+    fireEvent.click(screen.getByRole('button', { name: '로드맵으로' }))
+
+    await waitFor(() => expect(confirm).toHaveBeenCalledWith('지금 나가면 저장되지 않아요.\n나가시겠습니까?'))
+    expect(screen.getByTestId('location')).toHaveTextContent('/roadmaps/rmp_alpha/quests/qst_1')
+  })
+
+  it('blocks browser back navigation until unsaved STAR changes are confirmed', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    mockGetQuest.mockResolvedValue(quest())
+    const { router } = renderApp('/roadmaps/rmp_alpha/quests/qst_1', '/roadmaps/rmp_alpha')
+
+    const situation = await screen.findByLabelText(/상황 \(Situation\)/)
+    fireEvent.change(situation, { target: { value: '저장 전 상황' } })
+    await router.navigate(-1)
+
+    await waitFor(() => expect(confirm).toHaveBeenCalledWith('지금 나가면 저장되지 않아요.\n나가시겠습니까?'))
+    expect(screen.getByTestId('location')).toHaveTextContent('/roadmaps/rmp_alpha/quests/qst_1')
+  })
+
+  it('proceeds with navigation after confirming unsaved STAR changes', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    mockGetQuest.mockResolvedValue(quest())
+    renderApp('/roadmaps/rmp_alpha/quests/qst_1')
+
+    const situation = await screen.findByLabelText(/상황 \(Situation\)/)
+    fireEvent.change(situation, { target: { value: '저장 전 상황' } })
+    fireEvent.click(screen.getByRole('button', { name: '로드맵으로' }))
+
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/roadmaps/rmp_alpha'))
+  })
+
+  it('registers the browser unload warning only after STAR changes', async () => {
+    mockGetQuest.mockResolvedValue(quest())
+    renderApp('/roadmaps/rmp_alpha/quests/qst_1')
+
+    const situation = await screen.findByLabelText(/상황 \(Situation\)/)
+    const unchangedEvent = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(unchangedEvent)
+    expect(unchangedEvent.defaultPrevented).toBe(false)
+
+    fireEvent.change(situation, { target: { value: '저장 전 상황' } })
+    await waitFor(() => {
+      const changedEvent = new Event('beforeunload', { cancelable: true })
+      window.dispatchEvent(changedEvent)
+      expect(changedEvent.defaultPrevented).toBe(true)
+    })
+  })
+
+  it('allows navigation without a confirmation when STAR has not changed', async () => {
+    const confirm = vi.spyOn(window, 'confirm')
+    mockGetQuest.mockResolvedValue(quest())
+    renderApp('/roadmaps/rmp_alpha/quests/qst_1')
+
+    await screen.findByLabelText(/상황 \(Situation\)/)
+    fireEvent.click(screen.getByRole('button', { name: '로드맵으로' }))
+
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/roadmaps/rmp_alpha'))
+    expect(confirm).not.toHaveBeenCalled()
   })
 })

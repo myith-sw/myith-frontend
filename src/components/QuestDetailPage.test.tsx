@@ -165,36 +165,8 @@ describe('QuestDetailPage STAR action', () => {
     expect(screen.getByRole('button', { name: '수정하기' })).toBeEnabled()
   })
 
-  it('수정사항이 있으면 로드맵 뒤로가기 전에 확인하고 취소할 수 있다', () => {
+  it('수정사항이 있어도 이탈 확인은 라우트에서 처리하도록 로드맵 이동 콜백을 호출한다', () => {
     const onBack = vi.fn()
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
-    render(
-      <QuestDetailPage
-        onBack={onBack}
-        quest={{
-          ...baseQuest,
-          star: {
-            situation: '기존 상황',
-            task: '기존 과제',
-            action: '기존 행동',
-            result: '기존 결과',
-          },
-        }}
-      />,
-    )
-
-    fireEvent.change(screen.getByLabelText(/상황 \(Situation\)/), {
-      target: { value: '수정된 상황' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: '로드맵으로' }))
-
-    expect(confirm).toHaveBeenCalledWith('지금 나가면 저장되지 않아요.\n나가시겠습니까?')
-    expect(onBack).not.toHaveBeenCalled()
-  })
-
-  it('수정사항 확인에 동의하면 로드맵으로 이동한다', () => {
-    const onBack = vi.fn()
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     render(
       <QuestDetailPage
         onBack={onBack}
