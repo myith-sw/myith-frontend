@@ -633,7 +633,7 @@ function RoadmapRoute() {
 function QuestRoute() {
   const navigate = useNavigate()
   const { questId, roadmapId: routeRoadmapId } = useParams()
-  const { refreshCharacters } = useApplication()
+  const { characters, refreshCharacters } = useApplication()
   const [quest, setQuest] = useState<QuestDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -688,6 +688,7 @@ function QuestRoute() {
   }, [blocker])
 
   const activeRoadmapId = resolveQuestRoadmapId(routeRoadmapId, quest?.roadmapId)
+  const initialCompletionRate = characters.find((character) => character.roadmapId === activeRoadmapId)?.completionRate ?? 0
 
   useEffect(() => {
     if (!quest || !questId) return
@@ -720,6 +721,7 @@ function QuestRoute() {
       <AsyncState error={error} loading={loading} onRetry={() => void load()} />
       {quest && activeRoadmapId && !loading && !error && (
         <QuestDetailPage
+          initialCompletionRate={initialCompletionRate}
           onBack={() => {
             navigate(`/roadmaps/${activeRoadmapId}`)
           }}

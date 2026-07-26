@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { completeQuest, saveStar } from '../api/endpoints'
 import type { QuestDetail } from '../api/types'
@@ -228,6 +228,76 @@ describe('QuestDetailPage STAR action', () => {
     })
   })
 
+  it('최초 완료 성공 시 최신 진행률을 담은 성공 모달을 표시한다', async () => {
+    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'PENDING' })
+    vi.mocked(completeQuest).mockResolvedValue({
+      characterChanges: { completionRate: 80 },
+      quest: { questId: 'qst_1', status: 'DONE', version: 2 },
+    })
+    render(<QuestDetailPage initialCompletionRate={42} onBack={vi.fn()} quest={baseQuest} />)
+
+    screen.getAllByRole('textbox').forEach((textbox, index) => {
+      fireEvent.change(textbox, { target: { value: `${index + 1}번째 입력` } })
+    })
+    fireEvent.click(screen.getByRole('button', { name: '완료하고 역량 채우기' }))
+
+    const modal = await screen.findByRole('dialog', { name: '퀘스트를 완료했어요' })
+    expect(modal).toHaveTextContent('테스트 퀘스트')
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemin', '0')
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '100')
+    expect(within(modal).getByRole('button', { name: '확인' })).toBeEnabled()
+    expect(within(modal).getByRole('button', { name: '로드맵으로' })).toBeEnabled()
+  })
+
+  it('성공 모달의 확인은 상세에 남고 로드맵으로는 뒤로가기 콜백을 호출한다', async () => {
+    const onBack = vi.fn()
+    const onUpdated = vi.fn()
+    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'PENDING' })
+    vi.mocked(completeQuest).mockResolvedValue({
+      characterChanges: { completionRate: 80 },
+      quest: { questId: 'qst_1', status: 'DONE', version: 2 },
+    })
+    const firstRender = render(<QuestDetailPage onBack={onBack} onUpdated={onUpdated} quest={baseQuest} />)
+
+    screen.getAllByRole('textbox').forEach((textbox, index) => {
+      fireEvent.change(textbox, { target: { value: `${index + 1}번째 입력` } })
+    })
+    fireEvent.click(screen.getByRole('button', { name: '완료하고 역량 채우기' }))
+    await screen.findByRole('dialog', { name: '퀘스트를 완료했어요' })
+
+    fireEvent.click(screen.getByRole('button', { name: '확인' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(onBack).not.toHaveBeenCalled()
+    expect(onUpdated).toHaveBeenCalledOnce()
+
+    firstRender.unmount()
+    render(<QuestDetailPage onBack={onBack} onUpdated={onUpdated} quest={baseQuest} />)
+    screen.getAllByRole('textbox').forEach((textbox, index) => {
+      fireEvent.change(textbox, { target: { value: `${index + 1}번째 입력` } })
+    })
+    fireEvent.click(screen.getByRole('button', { name: '완료하고 역량 채우기' }))
+    const modal = await screen.findByRole('dialog', { name: '퀘스트를 완료했어요' })
+    fireEvent.click(within(modal).getByRole('button', { name: '로드맵으로' }))
+
+    expect(onBack).toHaveBeenCalledOnce()
+    expect(onUpdated).toHaveBeenCalledTimes(2)
+  })
+
+  it('최초 완료 요청이 실패하면 성공 모달을 열지 않고 오류를 표시한다', async () => {
+    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'PENDING' })
+    vi.mocked(completeQuest).mockRejectedValue(new Error('완료 처리에 실패했습니다.'))
+    render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
+
+    screen.getAllByRole('textbox').forEach((textbox, index) => {
+      fireEvent.change(textbox, { target: { value: `${index + 1}번째 입력` } })
+    })
+    fireEvent.click(screen.getByRole('button', { name: '완료하고 역량 채우기' }))
+
+    await screen.findByText('완료 처리에 실패했습니다.')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '완료하고 역량 채우기' })).toBeEnabled()
+  })
+
   it('기존 STAR 수정은 저장만 하고 완료 상태를 다시 변경하지 않는다', async () => {
     vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'DONE' })
     render(
@@ -255,5 +325,6 @@ describe('QuestDetailPage STAR action', () => {
       expect(saveStar).toHaveBeenCalledOnce()
     })
     expect(completeQuest).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

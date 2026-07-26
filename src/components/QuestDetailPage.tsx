@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { completeQuest, pollAiEnhancement, requestAiEnhancement, saveStar } from '../api/endpoints'
-import type { QuestDetail, StarInput } from '../api/types'
+import type { CompleteResponse, QuestDetail, StarInput } from '../api/types'
 import { homeAssets } from '../assets/home'
 import { questDetailAssets } from '../assets/quest-detail'
 import { AIAssistModal, type StarRecord } from './AIAssistModal'
+import { QuestCompletionModal } from './QuestCompletionModal'
 
 interface QuestDetailPageProps {
+  initialCompletionRate?: number
   onBack: () => void
   onDirtyChange?: (isDirty: boolean) => void
   onUpdated?: () => void
@@ -36,13 +38,23 @@ function hasWrittenStar(record: StarRecord) {
   return starFields.some(({ id }) => record[id].trim().length > 0)
 }
 
-export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: QuestDetailPageProps) {
+export function QuestDetailPage({
+  initialCompletionRate = 0,
+  onBack,
+  onDirtyChange,
+  onUpdated,
+  quest,
+}: QuestDetailPageProps) {
   const [starRecord, setStarRecord] = useState<StarRecord>(() => normalizeStar(quest.star))
   const [persistedStar, setPersistedStar] = useState<StarRecord>(() => normalizeStar(quest.star))
   const [hasPersistedStar, setHasPersistedStar] = useState(() => hasWrittenStar(normalizeStar(quest.star)))
   const [status, setStatus] = useState(quest.status)
   const [version, setVersion] = useState(quest.version ?? 0)
   const [isAiModalOpen, setIsAiModalOpen] = useState(false)
+  const [completionResult, setCompletionResult] = useState<CompleteResponse | null>(null)
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
+  const [completionRetryRequired, setCompletionRetryRequired] = useState(false)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState('')
   const starRef = useRef(starRecord)
@@ -59,6 +71,9 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
     setStatus(quest.status)
     setVersion(quest.version ?? 0)
     setSaveState('idle')
+    setCompletionResult(null)
+    setIsCompletionModalOpen(false)
+    setCompletionRetryRequired(false)
   }, [quest])
 
   useEffect(() => {
@@ -121,24 +136,39 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
 
   const canComplete = !isLocked && starFields.every(({ id }) => starRecord[id].trim())
   const canEnhance = !isLocked && (hasPersistedStar || canComplete)
-  const canSubmit = canComplete && (!hasPersistedStar || isDirty)
+  const canSubmit = canComplete && (!hasPersistedStar || isDirty || completionRetryRequired)
 
   const submitStar = async () => {
-    if (!quest.questId || !canSubmit) return
+    if (!quest.questId || !canSubmit || isCompleting) return
+    setIsCompleting(true)
+    let attemptedCompletion = false
     try {
-      await saveNow()
-      if (!hasPersistedStar) {
+      if (!hasPersistedStar || isDirty) {
+        await saveNow()
+      }
+      if (!hasPersistedStar || completionRetryRequired) {
+        attemptedCompletion = true
         const result = await completeQuest(
           quest.questId,
           { completed: true, version },
         )
         setStatus(result.quest?.status)
         setVersion(result.quest?.version ?? version + 1)
+        setCompletionResult(result)
+        setCompletionRetryRequired(false)
+        setIsCompletionModalOpen(true)
       }
-      onUpdated?.()
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'STAR 저장에 실패했습니다.')
+      if (attemptedCompletion) setCompletionRetryRequired(true)
+    } finally {
+      setIsCompleting(false)
     }
+  }
+
+  const closeCompletionModal = () => {
+    setIsCompletionModalOpen(false)
+    onUpdated?.()
   }
 
   return (
@@ -232,13 +262,13 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
           </button>
           <button
             className={`flex items-center justify-center rounded-[10px] px-5 py-3 text-sm tracking-[-0.28px] transition-colors disabled:cursor-not-allowed ${
-              hasPersistedStar
+              hasPersistedStar && !completionRetryRequired
                 ? 'bg-[#6bd8d5] font-semibold text-white'
                 : canSubmit
                   ? 'border-[1.2px] border-[#59d8d4] bg-[#59d8d4] font-medium text-white'
                   : 'border-[1.2px] border-[#eaeaea] bg-[#f7f7f7] font-normal text-black/50'
             }`}
-            disabled={!canSubmit}
+            disabled={!canSubmit || isCompleting}
             onClick={() => void submitStar()}
             type="button"
           >
@@ -247,11 +277,11 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
                 alt=""
                 aria-hidden="true"
                 className={`h-[11.2px] w-3.5 ${
-                  !hasPersistedStar && canSubmit ? 'brightness-0 invert' : ''
+                  (!hasPersistedStar || completionRetryRequired) && canSubmit ? 'brightness-0 invert' : ''
                 }`}
                 src={questDetailAssets.completeQuest}
               />
-              <span>{hasPersistedStar ? '수정하기' : '완료하고 역량 채우기'}</span>
+              <span>{isCompleting ? '완료 처리 중…' : hasPersistedStar && !completionRetryRequired ? '수정하기' : '완료하고 역량 채우기'}</span>
             </span>
           </button>
         </div>
@@ -269,6 +299,17 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
         open={isAiModalOpen}
         originalRecord={starRecord}
         requestEnhancement={requestEnhancement}
+      />
+      <QuestCompletionModal
+        initialProgress={initialCompletionRate}
+        onClose={closeCompletionModal}
+        onRoadmap={() => {
+          closeCompletionModal()
+          onBack()
+        }}
+        open={isCompletionModalOpen}
+        progress={completionResult?.characterChanges?.completionRate ?? initialCompletionRate}
+        questTitle={quest.title ?? '퀘스트'}
       />
     </section>
   )
