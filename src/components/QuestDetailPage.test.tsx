@@ -90,6 +90,27 @@ describe('QuestDetailPage STAR action', () => {
     expect(screen.queryByRole('button', { name: '완료 취소' })).not.toBeInTheDocument()
   })
 
+  it('저장된 STAR가 변경되지 않아도 AI 강화 버튼을 활성화한다', () => {
+    render(
+      <QuestDetailPage
+        onBack={vi.fn()}
+        quest={{
+          ...baseQuest,
+          status: 'DONE',
+          star: {
+            situation: '저장된 상황',
+            task: '저장된 과제',
+            action: '저장된 행동',
+            result: '저장된 결과',
+          },
+        }}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: 'AI로 강화하기' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '수정하기' })).toBeDisabled()
+  })
+
   it('최초 STAR 네 항목을 모두 작성하면 청록색 제출 버튼을 활성화한다', () => {
     render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
 

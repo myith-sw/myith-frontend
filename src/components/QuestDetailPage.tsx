@@ -118,7 +118,7 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
   }, [quest.questId, saveNow])
 
   const canComplete = !isLocked && starFields.every(({ id }) => starRecord[id].trim())
-  const canEnhance = canComplete
+  const canEnhance = !isLocked && (hasPersistedStar || canComplete)
   const canSubmit = canComplete && (!hasPersistedStar || isDirty)
 
   const submitStar = async () => {
