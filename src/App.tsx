@@ -19,11 +19,11 @@ import {
   subscribeRoadmapProgress,
   uploadProjectFile,
 } from './api/endpoints'
+import { mapJobCatalog } from './api/jobCatalog'
 import { prepareRoadmapEvidence } from './api/roadmapPayload'
 import type {
   CharacterSummary,
   DashboardResponse,
-  JobListResponse,
   QuestDetail,
   RoadmapDetail,
 } from './api/types'
@@ -56,7 +56,6 @@ import {
 } from './data/home'
 import {
   createEmptyProjectExperience,
-  jobCategories as localJobCategories,
   type JobCategory,
   type JobOption,
 } from './data/onboarding'
@@ -231,27 +230,6 @@ function EggRoute() {
   )
 }
 
-function mapJobCatalog(data: JobListResponse) {
-  const iconByCode = new Map(localJobCategories.map((category) => [category.id, category.icon]))
-  const fallbackIcon = localJobCategories.find((category) => category.id === 'other')?.icon ?? ''
-  const categories: JobCategory[] = (data.categories ?? []).map((category) => ({
-    id: category.categoryCode ?? '',
-    label: category.categoryName ?? '',
-    icon: iconByCode.get(category.categoryCode ?? '') ?? fallbackIcon,
-  }))
-  const jobs: JobOption[] = (data.categories ?? []).flatMap((category) =>
-    (category.jobs ?? []).map((job) => ({
-      id: job.jobCode ?? '',
-      categoryId: category.categoryCode ?? '',
-      title: job.jobName ?? '',
-      description: job.tagline ?? '',
-      skills: job.keywords ?? [],
-      available: job.available !== false,
-    })),
-  )
-  return { categories, jobs }
-}
-
 function JobRoute() {
   const navigate = useNavigate()
   const { onboarding, setOnboarding } = useApplication()
@@ -265,18 +243,17 @@ function JobRoute() {
     try {
       const next = mapJobCatalog(await getJobs())
       setCatalog(next)
-      if (!next.categories.some((category) => category.id === onboarding.selectedCategoryId)) {
-        setOnboarding((current) => ({
-          ...current,
-          selectedCategoryId: next.categories[0]?.id ?? '',
-        }))
-      }
+      setOnboarding((current) => (
+        next.categories.some((category) => category.id === current.selectedCategoryId)
+          ? current
+          : { ...current, selectedCategoryId: next.categories[0]?.id ?? '' }
+      ))
     } catch (nextError) {
       setError(errorMessage(nextError, '직무 목록을 불러오지 못했습니다.'))
     } finally {
       setLoading(false)
     }
-  }, [onboarding.selectedCategoryId, setOnboarding])
+  }, [setOnboarding])
 
   useEffect(() => {
     void load()
@@ -326,6 +303,15 @@ function NameRoute() {
         nickname={onboarding.nickname}
         onContinue={() => navigate('/characters/new/assessment')}
         onNicknameChange={(nickname) => setOnboarding((current) => ({ ...current, nickname }))}
+        onSelectCategory={(selectedCategoryId) => {
+          setOnboarding((current) => ({
+            ...current,
+            selectedCategoryId,
+            selectedJob: null,
+            diagnosis: null,
+          }))
+          navigate('/characters/new/jobs')
+        }}
       />
     </AppShell>
   )

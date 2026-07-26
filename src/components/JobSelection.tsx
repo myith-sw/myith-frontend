@@ -1,4 +1,5 @@
 import type { CategoryId, JobCategory, JobOption } from '../data/onboarding'
+import { CategoryIcon } from './CategoryIcon'
 import { ComingSoonCard } from './ComingSoonCard'
 import { JobCard } from './JobCard'
 
@@ -46,15 +47,7 @@ export function JobSelection({
               onClick={() => onSelectCategory(category.id)}
               type="button"
             >
-              <img
-                alt=""
-                aria-hidden="true"
-                className="size-3"
-                height={12}
-                src={category.icon}
-                style={{ filter: isActive ? 'brightness(0) invert(1)' : undefined }}
-                width={12}
-              />
+              <CategoryIcon active={isActive} src={category.icon} />
               {category.label}
             </button>
           )

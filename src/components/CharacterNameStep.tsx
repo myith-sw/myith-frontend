@@ -1,5 +1,5 @@
 import { homeAssets } from '../assets/home'
-import type { JobOption } from '../data/onboarding'
+import type { CategoryId, JobOption } from '../data/onboarding'
 import { CategoryPills } from './CategoryPills'
 import { ComingSoonCard } from './ComingSoonCard'
 import { JobCard } from './JobCard'
@@ -8,6 +8,7 @@ interface CharacterNameStepProps {
   job: JobOption
   nickname: string
   onNicknameChange: (nickname: string) => void
+  onSelectCategory: (categoryId: CategoryId) => void
   onContinue: () => void
 }
 
@@ -15,6 +16,7 @@ export function CharacterNameStep({
   job,
   nickname,
   onNicknameChange,
+  onSelectCategory,
   onContinue,
 }: CharacterNameStepProps) {
   const canContinue = nickname.trim().length > 0
@@ -31,7 +33,11 @@ export function CharacterNameStep({
       </header>
 
       <div className="mt-[30px]">
-        <CategoryPills activeCategoryId={job.categoryId} ariaLabel="선택한 직무 분야" />
+        <CategoryPills
+          activeCategoryId={job.categoryId}
+          ariaLabel="선택한 직무 분야"
+          onSelectCategory={onSelectCategory}
+        />
       </div>
 
       <div className="mt-[23px] grid grid-cols-1 items-stretch gap-[10px] min-[1200px]:grid-cols-2">
