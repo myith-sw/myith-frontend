@@ -18,7 +18,9 @@ export function JobSelection({
   onSelectCategory,
   onSelectJob,
 }: JobSelectionProps) {
-  const availableJobs = jobs.filter((job) => job.categoryId === selectedCategoryId)
+  const availableJobs = jobs.filter(
+    (job) => job.categoryId === selectedCategoryId && job.available !== false,
+  )
 
   return (
     <section className="w-full" aria-labelledby="new-character-title">
@@ -55,13 +57,9 @@ export function JobSelection({
       </div>
 
       <div className="mt-[23px] grid grid-cols-1 items-stretch gap-[10px] min-[1200px]:grid-cols-2">
-        {availableJobs.map((job) =>
-          job.available === false ? (
-            <ComingSoonCard key={job.id} />
-          ) : (
-            <JobCard job={job} key={job.id} onClick={() => onSelectJob(job)} />
-          ),
-        )}
+        {availableJobs.map((job) => (
+          <JobCard job={job} key={job.id} onClick={() => onSelectJob(job)} />
+        ))}
         <ComingSoonCard />
       </div>
     </section>

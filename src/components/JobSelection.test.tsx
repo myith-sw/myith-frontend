@@ -56,4 +56,39 @@ describe('JobSelection', () => {
     fireEvent.click(within(container).getByRole('button', { name: 'IT' }))
     expect(onSelectCategory).toHaveBeenCalledWith('it')
   })
+
+  it('준비 중인 직무가 여러 개여도 준비중 카드는 한 장만 표시한다', () => {
+    const unavailableJobs: JobOption[] = [
+      {
+        id: 'mobile-developer',
+        categoryId: 'it',
+        title: '모바일 개발자',
+        description: '',
+        skills: [],
+        available: false,
+      },
+      {
+        id: 'security-engineer',
+        categoryId: 'it',
+        title: '보안 엔지니어',
+        description: '',
+        skills: [],
+        available: false,
+      },
+    ]
+    const { container } = render(
+      <JobSelection
+        categories={jobCategories}
+        jobs={[frontendDeveloper, ...unavailableJobs]}
+        onSelectCategory={() => undefined}
+        onSelectJob={() => undefined}
+        selectedCategoryId="it"
+      />,
+    )
+
+    expect(within(container).getAllByText('준비중')).toHaveLength(1)
+    expect(within(container).getByText('프론트엔드 개발자')).toBeInTheDocument()
+    expect(within(container).queryByText('모바일 개발자')).not.toBeInTheDocument()
+    expect(within(container).queryByText('보안 엔지니어')).not.toBeInTheDocument()
+  })
 })
