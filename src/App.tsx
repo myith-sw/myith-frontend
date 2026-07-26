@@ -64,6 +64,10 @@ import type {
   RoadmapQuestGroup,
   RoadmapQuestStatus,
 } from './data/roadmap'
+import {
+  questDetailPath,
+  resolveQuestRoadmapId,
+} from './routing/questRoutes'
 
 const emptyCompetencies: CompetencyScores = {
   programming: 0,
@@ -186,7 +190,9 @@ function HomeRoute() {
           }}
           onOpenArchive={(roadmapId) => navigate(`/roadmaps/${roadmapId}/archive`)}
           onOpenQuest={(character) => {
-            if (character.nextQuestId) navigate(`/quests/${character.nextQuestId}`)
+            if (character.nextQuestId) {
+              navigate(questDetailPath(character.id, character.nextQuestId))
+            }
           }}
           onOpenRoadmap={(roadmapId) => navigate(`/roadmaps/${roadmapId}`)}
         />
@@ -577,7 +583,7 @@ function RoadmapRoute() {
               .catch((nextError) => setMutationError(errorMessage(nextError, '퀘스트 추가에 실패했습니다.')))
           }}
           onOpenArchive={() => navigate(`/roadmaps/${roadmapId}/archive`)}
-          onOpenQuest={(quest) => navigate(`/quests/${quest.id}`)}
+          onOpenQuest={(quest) => navigate(questDetailPath(roadmapId, quest.id))}
           questGroups={questGroups}
         />
       )}
@@ -587,7 +593,7 @@ function RoadmapRoute() {
 
 function QuestRoute() {
   const navigate = useNavigate()
-  const { questId } = useParams()
+  const { questId, roadmapId: routeRoadmapId } = useParams()
   const [quest, setQuest] = useState<QuestDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -608,17 +614,36 @@ function QuestRoute() {
   useEffect(() => {
     void load()
   }, [load])
+
+  const activeRoadmapId = resolveQuestRoadmapId(routeRoadmapId, quest?.roadmapId)
+
+  useEffect(() => {
+    if (!quest || !questId) return
+
+    const responseRoadmapId = resolveQuestRoadmapId(undefined, quest.roadmapId)
+    if (!responseRoadmapId) {
+      if (!routeRoadmapId) {
+        setError('퀘스트 응답에서 로드맵 정보를 확인할 수 없습니다.')
+      }
+      return
+    }
+
+    if (responseRoadmapId !== routeRoadmapId) {
+      navigate(questDetailPath(responseRoadmapId, questId), { replace: true })
+    }
+  }, [navigate, quest, questId, routeRoadmapId])
+
   if (!questId) return <Navigate replace to="/" />
 
   return (
     <AppShell
-      sidebar={<CharacterSidebar activeRoadmapId={quest?.roadmapId} onHome={() => navigate('/')} />}
+      sidebar={<CharacterSidebar activeRoadmapId={activeRoadmapId} onHome={() => navigate('/')} />}
       variant="quest"
     >
       <AsyncState error={error} loading={loading} onRetry={() => void load()} />
-      {quest && !loading && (
+      {quest && activeRoadmapId && !loading && !error && (
         <QuestDetailPage
-          onBack={() => navigate(`/roadmaps/${quest.roadmapId}`)}
+          onBack={() => navigate(`/roadmaps/${activeRoadmapId}`)}
           onUpdated={() => void load()}
           quest={quest}
         />
@@ -740,6 +765,7 @@ export default function App() {
         <Route element={<AssessmentRoute />} path="/characters/new/assessment" />
         <Route element={<RoadmapRoute />} path="/roadmaps/:roadmapId" />
         <Route element={<ArchiveRoute />} path="/roadmaps/:roadmapId/archive" />
+        <Route element={<QuestRoute />} path="/roadmaps/:roadmapId/quests/:questId" />
         <Route element={<QuestRoute />} path="/quests/:questId" />
       </Route>
       <Route element={<Navigate replace to="/" />} path="*" />
