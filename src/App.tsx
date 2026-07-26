@@ -419,10 +419,8 @@ function AssessmentRoute() {
 
   const generate = async () => {
     if (!diagnosis?.profileVersion) return
-    if (
-      characters.some((character) => character.jobCode === selectedJob.id) &&
-      !window.confirm('같은 직무의 기존 활성 로드맵이 아카이브됩니다. 새 로드맵을 생성할까요?')
-    ) {
+    if (characters.some((character) => character.jobCode === selectedJob.id)) {
+      window.alert('이미 존재하는 직무입니다.')
       return
     }
 
