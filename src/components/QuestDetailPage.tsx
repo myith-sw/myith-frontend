@@ -7,6 +7,7 @@ import { AIAssistModal, type StarRecord } from './AIAssistModal'
 
 interface QuestDetailPageProps {
   onBack: () => void
+  onDirtyChange?: (isDirty: boolean) => void
   onUpdated?: () => void
   quest: QuestDetail
 }
@@ -27,41 +28,64 @@ function normalizeStar(star: StarInput | null | undefined): StarRecord {
   }
 }
 
-export function QuestDetailPage({ onBack, onUpdated, quest }: QuestDetailPageProps) {
+function recordsMatch(left: StarRecord, right: StarRecord) {
+  return starFields.every(({ id }) => left[id] === right[id])
+}
+
+function hasWrittenStar(record: StarRecord) {
+  return starFields.some(({ id }) => record[id].trim().length > 0)
+}
+
+export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: QuestDetailPageProps) {
   const [starRecord, setStarRecord] = useState<StarRecord>(() => normalizeStar(quest.star))
+  const [persistedStar, setPersistedStar] = useState<StarRecord>(() => normalizeStar(quest.star))
+  const [hasPersistedStar, setHasPersistedStar] = useState(() => hasWrittenStar(normalizeStar(quest.star)))
   const [status, setStatus] = useState(quest.status)
   const [version, setVersion] = useState(quest.version ?? 0)
   const [isAiModalOpen, setIsAiModalOpen] = useState(false)
-  const [saveState, setSaveState] = useState<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState('')
   const starRef = useRef(starRecord)
   const savePromiseRef = useRef<Promise<void> | null>(null)
   const isLocked = status === 'LOCKED'
-  const isComplete = status === 'DONE' || status === 'ALREADY_KNOWN'
+  const isDirty = !recordsMatch(starRecord, persistedStar)
 
   useEffect(() => {
     const next = normalizeStar(quest.star)
     starRef.current = next
     setStarRecord(next)
+    setPersistedStar(next)
+    setHasPersistedStar(hasWrittenStar(next))
     setStatus(quest.status)
     setVersion(quest.version ?? 0)
     setSaveState('idle')
   }, [quest])
 
+  useEffect(() => {
+    onDirtyChange?.(isDirty)
+
+    return () => {
+      onDirtyChange?.(false)
+    }
+  }, [isDirty, onDirtyChange])
+
   const saveNow = useCallback(async (source: 'manual' | 'ai-assisted' = 'manual', aiEnhancementId?: string) => {
     if (!quest.questId || isLocked) return
     if (savePromiseRef.current) await savePromiseRef.current
 
+    const submittedRecord = { ...starRef.current }
     setSaveState('saving')
     setError('')
     const promise = saveStar(quest.questId, {
-      star: starRef.current,
+      star: submittedRecord,
       source,
       aiEnhancementId: aiEnhancementId ?? null,
     })
       .then((result) => {
         setStatus(result.status)
-        setSaveState('saved')
+        setPersistedStar(submittedRecord)
+        setHasPersistedStar(true)
+        setSaveState(recordsMatch(starRef.current, submittedRecord) ? 'saved' : 'idle')
       })
       .catch((nextError: unknown) => {
         setSaveState('error')
@@ -74,12 +98,6 @@ export function QuestDetailPage({ onBack, onUpdated, quest }: QuestDetailPagePro
     savePromiseRef.current = promise
     await promise
   }, [isLocked, quest.questId])
-
-  useEffect(() => {
-    if (saveState !== 'dirty') return
-    const timeout = window.setTimeout(() => void saveNow(), 800)
-    return () => window.clearTimeout(timeout)
-  }, [saveNow, saveState, starRecord])
 
   const requestEnhancement = useCallback(async (signal: AbortSignal) => {
     await saveNow()
@@ -102,19 +120,21 @@ export function QuestDetailPage({ onBack, onUpdated, quest }: QuestDetailPagePro
   const canComplete = !isLocked && starFields.every(({ id }) => starRecord[id].trim())
   const canEnhance = canComplete
 
-  const toggleComplete = async () => {
+  const submitStar = async () => {
     if (!quest.questId || !canComplete) return
     try {
       await saveNow()
-      const result = await completeQuest(
-        quest.questId,
-        { completed: !isComplete, version },
-      )
-      setStatus(result.quest?.status)
-      setVersion(result.quest?.version ?? version + 1)
+      if (!hasPersistedStar) {
+        const result = await completeQuest(
+          quest.questId,
+          { completed: true, version },
+        )
+        setStatus(result.quest?.status)
+        setVersion(result.quest?.version ?? version + 1)
+      }
       onUpdated?.()
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : '완료 상태 변경에 실패했습니다.')
+      setError(nextError instanceof Error ? nextError.message : 'STAR 저장에 실패했습니다.')
     }
   }
 
@@ -161,7 +181,15 @@ export function QuestDetailPage({ onBack, onUpdated, quest }: QuestDetailPagePro
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold tracking-[-0.36px]">퀘스트 기록 (STAR)</h2>
           <span className="text-xs font-medium text-black/40" role="status">
-            {saveState === 'saving' ? '저장 중…' : saveState === 'saved' ? '저장됨' : saveState === 'error' ? '저장 실패' : ''}
+            {saveState === 'saving'
+              ? '저장 중…'
+              : saveState === 'saved'
+                ? '저장됨'
+                : saveState === 'error'
+                  ? '저장 실패'
+                  : isDirty
+                    ? '저장되지 않음'
+                    : ''}
           </span>
         </div>
 
@@ -173,12 +201,11 @@ export function QuestDetailPage({ onBack, onUpdated, quest }: QuestDetailPagePro
                 className="h-[85px] resize-none rounded-[10px] border border-[#e4e4e4] px-[14px] py-[14px] text-[13px] font-medium outline-none placeholder:text-black/50 focus:border-[#7dcecb] focus:ring-2 focus:ring-[#7dcecb]/20"
                 disabled={isLocked}
                 maxLength={2000}
-                onBlur={() => void saveNow()}
                 onChange={(event) => {
                   const next = { ...starRef.current, [field.id]: event.target.value }
                   starRef.current = next
                   setStarRecord(next)
-                  setSaveState('dirty')
+                  setSaveState('idle')
                 }}
                 placeholder={field.placeholder}
                 value={starRecord[field.id]}
@@ -201,13 +228,13 @@ export function QuestDetailPage({ onBack, onUpdated, quest }: QuestDetailPagePro
             AI로 강화하기
           </button>
           <button
-            className="flex items-center gap-2 rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#f7f7f7] px-5 py-3 text-sm font-medium text-black/60 disabled:opacity-40"
+            className="flex w-[190px] items-center justify-center gap-2 rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#f7f7f7] px-5 py-3 text-sm font-medium text-black/60 disabled:opacity-40"
             disabled={!canComplete}
-            onClick={() => void toggleComplete()}
+            onClick={() => void submitStar()}
             type="button"
           >
             <img alt="" aria-hidden="true" className="h-[11.2px] w-3.5" src={questDetailAssets.completeQuest} />
-            {isComplete ? '완료 취소' : '완료하고 역량 채우기'}
+            {hasPersistedStar ? '수정하기' : '완료하고 역량 채우기'}
           </button>
         </div>
       </article>
@@ -216,6 +243,7 @@ export function QuestDetailPage({ onBack, onUpdated, quest }: QuestDetailPagePro
         onApply={(record, enhancementId) => {
           starRef.current = record
           setStarRecord(record)
+          setSaveState('idle')
           setIsAiModalOpen(false)
           void saveNow('ai-assisted', enhancementId)
         }}

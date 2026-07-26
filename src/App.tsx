@@ -73,6 +73,7 @@ import {
   questDetailPath,
   resolveQuestRoadmapId,
 } from './routing/questRoutes'
+import { confirmDiscardChanges, unsavedChangesMessage } from './routing/unsavedChanges'
 
 const emptyCompetencies: CompetencyScores = {
   programming: 0,
@@ -114,9 +115,11 @@ function toArchiveSkillStatus(status: string | undefined): ArchiveSkillStatus {
 
 function CharacterSidebar({
   activeRoadmapId,
+  onBeforeNavigate = () => true,
   onHome,
 }: {
   activeRoadmapId?: string
+  onBeforeNavigate?: () => boolean
   onHome: () => void
 }) {
   const navigate = useNavigate()
@@ -124,21 +127,33 @@ function CharacterSidebar({
   const { logout, user } = useAuth()
   const mapped = characters.map(toMythCharacter)
   const profileName = user?.nickname || user?.email?.split('@')[0] || 'MYiTH 사용자'
+  const navigateIfAllowed = (action: () => void) => {
+    if (onBeforeNavigate()) {
+      action()
+    }
+  }
+
   return (
     <Sidebar
       activeCharacterId={activeRoadmapId}
       characters={mapped}
       onCreateCharacter={() => {
-        resetOnboarding()
-        navigate('/characters/new/egg')
+        navigateIfAllowed(() => {
+          resetOnboarding()
+          navigate('/characters/new/egg')
+        })
       }}
-      onHome={onHome}
+      onHome={() => navigateIfAllowed(onHome)}
       onLogout={() => {
-        logout()
-        resetOnboarding()
-        navigate('/login', { replace: true })
+        navigateIfAllowed(() => {
+          logout()
+          resetOnboarding()
+          navigate('/login', { replace: true })
+        })
       }}
-      onSelectCharacter={(roadmapId) => navigate(`/roadmaps/${roadmapId}`)}
+      onSelectCharacter={(roadmapId) =>
+        navigateIfAllowed(() => navigate(`/roadmaps/${roadmapId}`))
+      }
       profile={user ? { email: user.email, imageUrl: user.profileImageUrl, name: profileName } : undefined}
     />
   )
@@ -602,6 +617,11 @@ function QuestRoute() {
   const [quest, setQuest] = useState<QuestDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const confirmNavigation = useCallback(
+    () => confirmDiscardChanges(hasUnsavedChanges),
+    [hasUnsavedChanges],
+  )
 
   const load = useCallback(async () => {
     if (!questId) return
@@ -619,6 +639,28 @@ function QuestRoute() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = unsavedChangesMessage
+    }
+    const handlePopState = () => {
+      if (!window.confirm(unsavedChangesMessage)) {
+        window.history.forward()
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('popstate', handlePopState)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [hasUnsavedChanges])
 
   const activeRoadmapId = resolveQuestRoadmapId(routeRoadmapId, quest?.roadmapId)
 
@@ -642,13 +684,24 @@ function QuestRoute() {
 
   return (
     <AppShell
-      sidebar={<CharacterSidebar activeRoadmapId={activeRoadmapId} onHome={() => navigate('/')} />}
+      sidebar={
+        <CharacterSidebar
+          activeRoadmapId={activeRoadmapId}
+          onBeforeNavigate={confirmNavigation}
+          onHome={() => navigate('/')}
+        />
+      }
       variant="quest"
     >
       <AsyncState error={error} loading={loading} onRetry={() => void load()} />
       {quest && activeRoadmapId && !loading && !error && (
         <QuestDetailPage
-          onBack={() => navigate(`/roadmaps/${activeRoadmapId}`)}
+          onBack={() => {
+            if (confirmNavigation()) {
+              navigate(`/roadmaps/${activeRoadmapId}`)
+            }
+          }}
+          onDirtyChange={setHasUnsavedChanges}
           onUpdated={() => void load()}
           quest={quest}
         />
