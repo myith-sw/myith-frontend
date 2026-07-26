@@ -20,8 +20,6 @@ export function EggSelectionHome({
   onSelectEgg,
   onContinue,
 }: EggSelectionHomeProps) {
-  const highlightedEggId = selectedEggId ?? 'teoreuteu'
-
   return (
     <section className="flex w-full flex-col items-center gap-[50px]">
       <header className="flex flex-col items-center gap-[10px]">
@@ -37,7 +35,6 @@ export function EggSelectionHome({
         <div className="mx-auto flex items-center justify-center gap-[54px]">
           {eggOptions.map((egg) => {
             const isSelected = selectedEggId === egg.id
-            const isHighlighted = highlightedEggId === egg.id
 
             return (
               <button
@@ -47,7 +44,7 @@ export function EggSelectionHome({
                 disabled={disabled}
                 key={egg.id}
                 onClick={() => onSelectEgg(egg.id)}
-                style={{ opacity: isHighlighted ? 1 : 0.2 }}
+                style={{ opacity: isSelected ? 1 : 0.2 }}
                 type="button"
               >
                 {isSelected && (
