@@ -62,19 +62,17 @@ describe('QuestDetailPage STAR action', () => {
     expect(screen.getAllByText('0/2000')).toHaveLength(3)
   })
 
-  it('처음 작성하는 STAR에는 완료 버튼 문구와 고정 폭을 사용한다', () => {
+  it('처음 작성하는 STAR에는 Figma의 콘텐츠 폭 비활성 완료 버튼을 사용한다', () => {
     render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
 
     const button = screen.getByRole('button', { name: '완료하고 역량 채우기' })
-    expect(button).toHaveClass('w-[190px]')
+    expect(button).not.toHaveClass('w-[190px]')
+    expect(button).toHaveClass('border-[#eaeaea]', 'bg-[#f7f7f7]', 'font-normal')
     expect(button).toBeDisabled()
-    expect(button.querySelector('img')).toHaveClass(
-      'absolute',
-      'left-6',
-    )
+    expect(button.querySelector('span')).toHaveClass('opacity-40')
   })
 
-  it('이미 작성된 STAR에는 같은 폭의 수정하기 버튼을 표시한다', () => {
+  it('이미 작성된 STAR에는 Figma의 청록 수정하기 버튼을 표시한다', () => {
     render(
       <QuestDetailPage
         onBack={vi.fn()}
@@ -92,12 +90,9 @@ describe('QuestDetailPage STAR action', () => {
     )
 
     const button = screen.getByRole('button', { name: '수정하기' })
-    expect(button).toHaveClass('w-[190px]')
+    expect(button).toHaveClass('bg-[#6bd8d5]', 'font-semibold', 'text-white')
     expect(button).toBeDisabled()
-    expect(button.querySelector('img')).toHaveClass(
-      'absolute',
-      'left-6',
-    )
+    expect(button.querySelector('img')).toHaveClass('h-[11.2px]', 'w-3.5')
     expect(screen.queryByRole('button', { name: '완료 취소' })).not.toBeInTheDocument()
   })
 

@@ -231,24 +231,28 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
             AI로 강화하기
           </button>
           <button
-            className={`relative flex w-[190px] items-center justify-center rounded-[10px] border-[1.2px] px-5 py-3 text-sm font-medium transition-colors ${
-              canSubmit
-                ? 'border-[#59d8d4] bg-[#59d8d4] text-white'
-                : 'border-[#eaeaea] bg-[#f7f7f7] text-black/60 opacity-40'
+            className={`flex items-center justify-center rounded-[10px] px-5 py-3 text-sm tracking-[-0.28px] transition-colors disabled:cursor-not-allowed ${
+              hasPersistedStar
+                ? 'bg-[#6bd8d5] font-semibold text-white'
+                : canSubmit
+                  ? 'border-[1.2px] border-[#59d8d4] bg-[#59d8d4] font-medium text-white'
+                  : 'border-[1.2px] border-[#eaeaea] bg-[#f7f7f7] font-normal text-black/50'
             }`}
             disabled={!canSubmit}
             onClick={() => void submitStar()}
             type="button"
           >
-            <img
-              alt=""
-              aria-hidden="true"
-              className={`absolute left-6 h-[11.2px] w-3.5 ${
-                canSubmit ? 'brightness-0 invert' : ''
-              }`}
-              src={questDetailAssets.completeQuest}
-            />
-            <span>{hasPersistedStar ? '수정하기' : '완료하고 역량 채우기'}</span>
+            <span className={`flex items-center justify-center gap-2 ${!hasPersistedStar && !canSubmit ? 'opacity-40' : ''}`}>
+              <img
+                alt=""
+                aria-hidden="true"
+                className={`h-[11.2px] w-3.5 ${
+                  !hasPersistedStar && canSubmit ? 'brightness-0 invert' : ''
+                }`}
+                src={questDetailAssets.completeQuest}
+              />
+              <span>{hasPersistedStar ? '수정하기' : '완료하고 역량 채우기'}</span>
+            </span>
           </button>
         </div>
       </article>
