@@ -175,7 +175,7 @@ export function QuestCompletionModal({
             type="button"
           >
             로드맵으로
-            <img alt="" aria-hidden="true" className="size-6" src={questCompletionAssets.successRoadmapArrow} />
+            <img alt="" aria-hidden="true" className="size-6 -scale-x-100" src={questCompletionAssets.successRoadmapArrow} />
           </button>
         </div>
       </div>
