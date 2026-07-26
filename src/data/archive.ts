@@ -1,6 +1,6 @@
 import type { AssessmentLevel } from './onboarding'
 
-export type ArchiveSkillStatus = 'complete' | 'known' | 'pending' | 'open' | 'locked'
+export type ArchiveSkillStatus = 'complete' | 'incomplete' | 'locked'
 
 export interface ArchiveSkill {
   category: string
@@ -30,7 +30,7 @@ export type CompetencyScores = Record<CompetencyKey, number>
 export interface ArchiveCharacter {
   title: string
   role: string
-  level: number
+  stage: number
   progress: number
   competencies: CompetencyScores
 }
@@ -158,7 +158,7 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
     skills: [
       { category: 'CS·자료구조', status: 'complete', title: '자료구조·알고리즘 기초를 안다' },
       { category: '데이터베이스', status: 'complete', title: '데이터베이스를 다룰 수 있다' },
-      { category: '협업·형상관리', status: 'pending', title: '버전관리로 협업한다' },
+      { category: '협업·형상관리', status: 'incomplete', title: '버전관리로 협업한다' },
     ],
   },
   {
@@ -167,15 +167,15 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
     skills: [
       { category: '서버·API', status: 'complete', title: 'REST API 서버를 구현한다' },
       { category: '서버·API', status: 'complete', title: '인증·보안 기초를 적용한다' },
-      { category: '프로그래밍 기초', status: 'pending', title: '테스트 코드를 작성한다' },
+      { category: '프로그래밍 기초', status: 'incomplete', title: '테스트 코드를 작성한다' },
     ],
   },
   {
     level: 4,
     label: '전설 단계',
     skills: [
-      { category: '배포·운영', status: 'open', title: '서비스를 배포해본다' },
-      { category: '배포·운영', status: 'open', title: '컨테이너·CI를 맛본다' },
+      { category: '배포·운영', status: 'incomplete', title: '서비스를 배포해본다' },
+      { category: '배포·운영', status: 'incomplete', title: '컨테이너·CI를 맛본다' },
     ],
   },
   {

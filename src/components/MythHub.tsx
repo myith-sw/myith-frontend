@@ -57,7 +57,7 @@ function MythCard({
             <div className="flex min-w-0 flex-col justify-center gap-2">
               <div className="flex items-center gap-[6px]">
                 <span className="rounded-[8px] bg-[#efefef] px-[6px] py-[2px] text-xs font-medium tracking-[-0.24px]">
-                  Lv.{character.level}
+                  Lv.{character.stage}
                 </span>
                 <span className="text-sm font-medium tracking-[-0.28px]">{character.stageLabel}</span>
               </div>

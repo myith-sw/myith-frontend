@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { ArchiveExperienceEntry } from '../data/archive'
+import type { ArchiveExperienceEntry, ArchiveSkillGroup } from '../data/archive'
 import { ArchivePage } from './ArchivePage'
 
 const experiences: ArchiveExperienceEntry[] = [
@@ -47,13 +47,13 @@ const experiences: ArchiveExperienceEntry[] = [
 
 afterEach(cleanup)
 
-function renderArchive(onOpenQuest = vi.fn()) {
+function renderArchive(onOpenQuest = vi.fn(), skillGroups: ArchiveSkillGroup[] = []) {
   return render(
     <ArchivePage
       character={{
         title: '테스트 캐릭터',
         role: '백엔드 개발자',
-        level: 2,
+        stage: 2,
         progress: 25,
         competencies: {
           programming: 10,
@@ -73,14 +73,39 @@ function renderArchive(onOpenQuest = vi.fn()) {
       experiences={experiences}
       onOpenRoadmap={vi.fn()}
       onOpenQuest={onOpenQuest}
-      skillGroups={[]}
+      skillGroups={skillGroups}
     />,
   )
 }
 
 describe('ArchivePage experience cards', () => {
+  it('스킬 트리는 로드맵 퀘스트와 같은 완료·진행·잠김 UI를 사용한다', () => {
+    renderArchive(vi.fn(), [
+      {
+        level: 1,
+        label: '',
+        skills: [
+          { category: '프로그래밍 기초', status: 'complete', title: '완료 스킬' },
+          { category: '프로그래밍 기초', status: 'incomplete', title: '진행 스킬' },
+          { category: '프로그래밍 기초', status: 'locked', title: '잠긴 스킬' },
+        ],
+      },
+    ])
+
+    const completed = screen.getByText('완료 스킬').parentElement?.parentElement?.parentElement
+    const incomplete = screen.getByText('진행 스킬').parentElement?.parentElement?.parentElement
+    const locked = screen.getByText('잠긴 스킬').parentElement?.parentElement?.parentElement
+
+    expect(completed).toHaveClass('border-[#c8eeed]', 'bg-[rgba(215,255,254,0.4)]')
+    expect(incomplete).toHaveClass('border-[#ffe3aa]', 'bg-[#faf4e7]')
+    expect(locked).toHaveClass('border-transparent', 'bg-[#f6f6f6]', 'text-black/50')
+  })
+
   it('경험 카드에 레벨과 역량 칩을 표시하고 레벨 누락 데이터는 분야 칩만 표시한다', () => {
     renderArchive()
+
+    expect(screen.getByText('백엔드 개발자 · Lv.2 · 완료 2개 · 진행률 25%')).toBeInTheDocument()
+    expect(screen.queryByText(/자기소개서 소스/)).not.toBeInTheDocument()
 
     const levelOneCard = screen.getByRole('heading', { name: '입문 경험' }).closest('article')
     expect(levelOneCard).not.toBeNull()

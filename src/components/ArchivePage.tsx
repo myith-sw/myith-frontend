@@ -29,17 +29,13 @@ interface ArchivePageProps {
 function SkillCard({ skill }: { skill: ArchiveSkill }) {
   const styles = {
     complete: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
-    known: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
-    pending: 'border-[#ffe3aa] bg-[rgba(255,235,198,0.4)]',
-    open: 'border-[#e5e5e5] bg-white',
+    incomplete: 'border-[#ffe3aa] bg-[#faf4e7]',
     locked: 'border-transparent bg-[#f6f6f6] text-black/50',
   }[skill.status]
 
   const statusIcon = {
     complete: homeAssets.archiveSkillComplete,
-    known: homeAssets.archiveSkillComplete,
-    pending: homeAssets.archiveSkillPending,
-    open: homeAssets.archiveSkillOpen,
+    incomplete: homeAssets.archiveSkillPending,
     locked: homeAssets.archiveSkillLocked,
   }[skill.status]
 
@@ -179,7 +175,7 @@ export function ArchivePage({
           <div className="flex flex-col gap-2.5">
             <h1 className="text-[22px] font-semibold tracking-[-0.66px]">{character.title}</h1>
             <p className="text-sm tracking-[-0.28px] opacity-50">
-              {character.role} · Lv.{character.level} · 완료 {completedCount}개 · 진행률 {character.progress}%
+              {character.role} · Lv.{character.stage} · 완료 {completedCount}개 · 진행률 {character.progress}%
             </p>
           </div>
         </div>
@@ -255,9 +251,6 @@ export function ArchivePage({
           width={16}
         />
         <h2 className="text-lg font-semibold tracking-[-0.54px]">경험 카드</h2>
-        <span className="text-sm tracking-[-0.28px] opacity-50">
-          {experiences.length > 0 ? `자기소개서 소스 · ${experiences.length}장` : '아직 기록된 경험이 없어요'}
-        </span>
       </div>
       {experiences.length > 0 && (
         <div aria-label="경험 카드 역량 필터" className="mt-4 flex flex-wrap items-center gap-2.5 pl-5">

@@ -271,7 +271,7 @@ export interface paths {
          * 로드맵 상세 조회
          * @description 화면 4-1(로드맵 상세).
          *     levels는 오름차순, quests는 order 오름차순으로 내린다.
-         *     레벨 개수는 직무마다 4~7개로 다르다. 구분선에는 "Lv.1"만 표시한다.
+         *     레벨 개수는 직무마다 4~7개로 다르다. 구분선에는 "Stage 1"만 표시한다.
          *     잠긴 퀘스트(LOCKED)도 목록에 포함한다.
          *     version은 낙관적 락용이다. 프론트가 보관했다가 완료·순서변경 요청에 실어 보낸다.
          */
@@ -827,7 +827,6 @@ export interface components {
             characterId?: string;
             species?: string;
             nickname?: string;
-            level?: number;
             /** @description 캐릭터 이미지 파일명 숫자. {species}-{stage}.png */
             stage?: number;
             /**
@@ -1699,7 +1698,6 @@ export interface operations {
                      *           "characterId": "chr_01J3ABC",
                      *           "species": "deokbaseu",
                      *           "nickname": "견습 서버 개발자",
-                     *           "level": 4,
                      *           "stage": 4,
                      *           "stageLabel": "완성",
                      *           "completionRate": 80

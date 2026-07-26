@@ -90,7 +90,7 @@ export function Sidebar({
                     const isInteractive = Boolean(character.id && onSelectCharacter)
 
                     return (
-                      <li className="h-[58px] w-[213px]" key={character.id ?? `${character.title}-${character.level}`}>
+                      <li className="h-[58px] w-[213px]" key={character.id ?? `${character.title}-${character.stage}`}>
                         <button
                           aria-label={isInteractive ? `${character.title} 아카이브 열기` : undefined}
                           className={`box-border flex h-full w-full items-center justify-between rounded-[10px] border px-[15px] py-3 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3] ${
@@ -117,7 +117,7 @@ export function Sidebar({
                               isSelected ? 'bg-[#7dcecb] text-white' : 'bg-[#efefef]'
                             }`}
                           >
-                            Lv.{character.level}
+                            Lv.{character.stage}
                           </span>
                         </button>
                       </li>

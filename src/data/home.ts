@@ -17,7 +17,7 @@ export interface SidebarCharacter {
   id?: string
   title: string
   role: string
-  level: number
+  stage: number
 }
 
 export interface MythCharacter extends SidebarCharacter {
@@ -74,7 +74,6 @@ export const mythCharacters: MythCharacter[] = [
     id: 'backend-apprentice',
     title: '견습 서버 개발자',
     role: '백엔드 개발자',
-    level: 4,
     stageLabel: '전설 단계',
     description: '서버, API, DB로 서비스의 뼈대를 만든다',
     progress: 80,
@@ -94,7 +93,6 @@ export const mythCharacters: MythCharacter[] = [
     id: 'data-analyst',
     title: '데이터 분석가',
     role: '데이터 분석가',
-    level: 1,
     stageLabel: '입문 단계',
     description: '데이터 속 문제의 흐름과 의사결정의 근거를 찾는다',
     progress: 5,
@@ -114,7 +112,6 @@ export const mythCharacters: MythCharacter[] = [
     id: 'digital-marketer',
     title: 'ㅇㅇㅇ',
     role: '디지털 마케터',
-    level: 2,
     stageLabel: '견습 단계',
     description: '콘텐츠와 데이터를 엮어 사람들의 행동을 움직인다',
     progress: 20,

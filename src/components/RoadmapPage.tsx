@@ -111,7 +111,7 @@ export function RoadmapPage({
             <div className="flex flex-col gap-2.5">
               <div className="flex items-center gap-2.5">
                 <span className="rounded-[8px] bg-[#efefef] px-[6px] py-[2px] text-xs font-medium tracking-[-0.24px]">
-                  Lv.{character.level}
+                  Lv.{character.stage}
                 </span>
                 <span className="text-sm font-medium tracking-[-0.28px]">{character.stageLabel}</span>
               </div>
@@ -210,10 +210,10 @@ export function RoadmapPage({
                 value={questAxisCode}
               />
               <CustomSelect<number>
-                ariaLabel="퀘스트 레벨"
+                ariaLabel="퀘스트 스테이지"
                 className="w-[143px] shrink-0"
                 onChange={setQuestLevel}
-                options={levels.map((level) => ({ label: `레벨 ${level}`, value: level }))}
+                options={levels.map((level) => ({ label: `스테이지 ${level}`, value: level }))}
                 value={questLevel}
               />
               <button
@@ -232,7 +232,7 @@ export function RoadmapPage({
             <section className="flex flex-col gap-5" key={group.level}>
               <div className="flex items-center gap-[13px]">
                 <span className="text-sm font-semibold tracking-[-0.28px] opacity-50">
-                  Lv.{group.level}
+                  Stage {group.level}
                 </span>
                 <span className="h-px flex-1 bg-[#e5e5e5]" />
               </div>

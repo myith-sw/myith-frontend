@@ -39,7 +39,7 @@ describe('ErrorPage', () => {
             characters={[
               {
                 id: 'rmp_42',
-                level: 2,
+                stage: 2,
                 role: '프론트엔드 개발자',
                 title: '테스트 캐릭터',
               },

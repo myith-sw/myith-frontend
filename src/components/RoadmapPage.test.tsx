@@ -31,7 +31,6 @@ describe('RoadmapPage', () => {
           job: '백엔드 개발자',
           description: '테스트 캐릭터',
           characterId: 'teoreuteu',
-          level: 1,
           stage: 1,
           stageLabel: '입문',
           progress: 0,
@@ -55,7 +54,7 @@ describe('RoadmapPage', () => {
     expect(onOpenQuest).toHaveBeenCalledWith(openQuest)
   })
 
-  it('레벨명은 숫자만 표시하고 완료·미완료·잠금 상태를 세 가지 UI로 렌더링한다', () => {
+  it('캐릭터는 API 스테이지를 Lv. 표기로, 퀘스트 구분선은 Stage. 표기로 렌더링한다', () => {
     render(
       <RoadmapPage
         axes={[{ code: 'programming', name: '프로그래밍 기초' }]}
@@ -64,7 +63,6 @@ describe('RoadmapPage', () => {
           job: '백엔드 개발자',
           description: '테스트 캐릭터',
           characterId: 'teoreuteu',
-          level: 1,
           stage: 1,
           stageLabel: '입문 단계',
           progress: 0,
@@ -105,8 +103,8 @@ describe('RoadmapPage', () => {
       />,
     )
 
-    expect(screen.getAllByText('Lv.1', { selector: 'span' })).toHaveLength(2)
-    expect(screen.queryByText('Lv.1 입문 단계', { selector: 'span' })).not.toBeInTheDocument()
+    expect(screen.getByText('Lv.1', { selector: 'span' })).toBeInTheDocument()
+    expect(screen.getByText('Stage 1', { selector: 'span' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '완료 퀘스트' })).toHaveClass(
       'border-[#c8eeed]',
       'bg-[rgba(215,255,254,0.4)]',
@@ -118,7 +116,7 @@ describe('RoadmapPage', () => {
     expect(screen.getByRole('button', { name: '잠금 퀘스트 (잠김)' })).toHaveClass('bg-[#f6f6f6]')
   })
 
-  it('Figma 커스텀 드롭다운에서 고른 역량과 레벨로 퀘스트를 추가한다', () => {
+  it('Figma 커스텀 드롭다운에서 고른 역량과 스테이지로 퀘스트를 추가한다', () => {
     const onAddQuest = vi.fn()
 
     render(
@@ -132,7 +130,6 @@ describe('RoadmapPage', () => {
           job: '백엔드 개발자',
           description: '테스트 캐릭터',
           characterId: 'teoreuteu',
-          level: 1,
           stage: 1,
           stageLabel: '입문',
           progress: 0,
@@ -148,8 +145,8 @@ describe('RoadmapPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '퀘스트 추가' }))
     fireEvent.click(screen.getByRole('button', { name: '역량 분류: 프로그래밍 기초' }))
     fireEvent.click(screen.getByRole('option', { name: '웹 개발 입문' }))
-    fireEvent.click(screen.getByRole('button', { name: '퀘스트 레벨: 레벨 1' }))
-    fireEvent.click(screen.getByRole('option', { name: '레벨 2' }))
+    fireEvent.click(screen.getByRole('button', { name: '퀘스트 스테이지: 스테이지 1' }))
+    fireEvent.click(screen.getByRole('option', { name: '스테이지 2' }))
     fireEvent.change(screen.getByPlaceholderText('퀘스트 제목 (예: 사이드 프로젝트를 운영한다)'), {
       target: { value: '나만의 웹 프로젝트 만들기' },
     })

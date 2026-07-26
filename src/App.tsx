@@ -94,7 +94,6 @@ function toMythCharacter(character: CharacterSummary): MythCharacter {
     resourceId: character.characterId,
     title: character.nickname ?? '이름 없는 캐릭터',
     role: character.jobName ?? '직무 미정',
-    level: character.level ?? 1,
     stageLabel: character.stageLabel ?? '시작',
     description: character.tagline ?? '',
     progress: character.completionRate ?? 0,
@@ -107,11 +106,9 @@ function toMythCharacter(character: CharacterSummary): MythCharacter {
 }
 
 function toArchiveSkillStatus(status: string | undefined): ArchiveSkillStatus {
-  if (status === 'DONE') return 'complete'
-  if (status === 'ALREADY_KNOWN') return 'known'
-  if (status === 'PENDING') return 'pending'
+  if (status === 'DONE' || status === 'ALREADY_KNOWN') return 'complete'
   if (status === 'LOCKED') return 'locked'
-  return 'open'
+  return 'incomplete'
 }
 
 function CharacterSidebar({
@@ -598,7 +595,6 @@ function RoadmapRoute() {
         job: data.jobName ?? '',
         description: data.tagline ?? '',
         characterId: data.character?.species ?? 'teoreuteu',
-        level: data.character?.level ?? 1,
         stage: data.character?.stage ?? 1,
         stageLabel: data.character?.stageLabel ?? '시작',
         progress: data.character?.completionRate ?? 0,
@@ -789,7 +785,7 @@ function ArchiveRoute() {
     ? {
         title: data.character?.nickname ?? '',
         role: data.character?.jobName ?? '',
-        level: data.character?.level ?? 1,
+        stage: data.character?.stage ?? 1,
         progress: data.character?.completionRate ?? 0,
         competencies: emptyCompetencies,
       }

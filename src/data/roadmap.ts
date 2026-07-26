@@ -11,7 +11,6 @@ export interface RoadmapCharacter {
   job: string
   description: string
   characterId: string
-  level: number
   stage: number
   stageLabel: string
   progress: number

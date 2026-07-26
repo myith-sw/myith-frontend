@@ -160,7 +160,7 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
       <article className="mt-[18px] rounded-[20px] bg-white p-5">
         <div className="flex flex-col gap-[14px]">
           <div className="flex gap-2">
-            <span className="rounded-[10px] bg-[#efefef] px-2.5 py-[2px] text-xs font-medium">Lv.{quest.level}</span>
+            <span className="rounded-[10px] bg-[#efefef] px-2.5 py-[2px] text-xs font-medium">Stage {quest.level}</span>
             <span className="rounded-[10px] bg-[#efefef] px-2.5 py-[2px] text-xs font-medium">{quest.axisName}</span>
           </div>
           <h1 className="text-[22px] font-semibold tracking-[-0.44px]">{quest.title}</h1>

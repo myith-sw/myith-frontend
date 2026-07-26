@@ -33,7 +33,6 @@ interface MockRoadmap {
     characterId: string
     species: string
     nickname: string
-    level: number
     stage: number
     stageLabel: string
     completionRate: number
@@ -102,7 +101,6 @@ const characters = mythCharacters.map((character, index) => {
       characterId: `mock-character-${index + 1}`,
       species: character.characterId,
       nickname: character.title,
-      level: character.level,
       stage: character.stage,
       stageLabel: character.stageLabel,
       completionRate: character.progress,
@@ -122,7 +120,7 @@ const characters = mythCharacters.map((character, index) => {
     completionRate: roadmap.character.completionRate,
     stage: roadmap.character.stage,
     stageLabel: roadmap.character.stageLabel,
-    level: character.level,
+    level: character.stage,
     nextQuest: {
       questId: roadmap.quests.find((quest) => quest.status !== 'DONE')?.questId ?? '',
       title: character.nextQuest,
@@ -345,7 +343,6 @@ export async function mockFetch(input: string, init: RequestInit = {}) {
         characterId,
         species: body.species,
         nickname: body.nickname,
-        level: 1,
         stage: 1,
         stageLabel: '시작',
         completionRate: 0,
@@ -463,9 +460,6 @@ export async function mockFetch(input: string, init: RequestInit = {}) {
     found.quest.version += 1
     const done = found.roadmap.quests.filter((quest) => ['DONE', 'ALREADY_KNOWN'].includes(quest.status)).length
     found.roadmap.character.completionRate = Math.round((done / found.roadmap.quests.length) * 100)
-    found.roadmap.character.level = Math.max(1, ...found.roadmap.quests
-      .filter((quest) => ['DONE', 'ALREADY_KNOWN'].includes(quest.status))
-      .map((quest) => quest.level))
     return json({
       data: {
         quest: {
