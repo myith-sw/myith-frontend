@@ -32,12 +32,19 @@ function MythCard({
 }: MythCardProps) {
   return (
     <article className="flex flex-col gap-[6px]">
-      <div className="relative rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#fefefe] p-[10px]">
+      <div
+        className="relative cursor-pointer rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#fefefe] p-[10px] transition-colors hover:border-[#7dcecb] hover:bg-[#faffff]"
+        data-testid={`myth-card-${character.id}`}
+        onClick={() => onOpenRoadmap(character.id)}
+      >
         <button
           aria-label={`${character.title} 캐릭터 삭제`}
           className="absolute top-2.5 right-2.5 rounded-md px-2 py-1 text-[11px] font-medium text-[#d65454] opacity-55 transition-colors hover:bg-[#fff0f0] hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d65454] disabled:cursor-wait disabled:opacity-30"
           disabled={deleting || !character.resourceId}
-          onClick={() => onDeleteCharacter(character)}
+          onClick={(event) => {
+            event.stopPropagation()
+            onDeleteCharacter(character)
+          }}
           type="button"
         >
           {deleting ? '삭제 중' : '삭제'}
@@ -84,7 +91,10 @@ function MythCard({
             <span className="text-xs font-medium tracking-[-0.24px] opacity-50">다음 퀘스트</span>
             <button
               className="flex items-center gap-2 text-sm font-medium tracking-[-0.28px] opacity-70 transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
-              onClick={() => onOpenQuest(character)}
+              onClick={(event) => {
+                event.stopPropagation()
+                onOpenQuest(character)
+              }}
               type="button"
             >
               {character.nextQuest}
