@@ -42,7 +42,7 @@ export function Sidebar({
   const profileInitial = profile?.name.trim().slice(0, 1).toLowerCase() || 'm'
 
   return (
-    <aside className="sticky top-0 z-10 flex h-screen w-[244px] shrink-0 self-start flex-col overflow-hidden border-r border-[#eaeaea] bg-white">
+    <aside className="sticky top-0 z-10 flex h-screen w-[244px] shrink-0 self-start flex-col overflow-hidden border-r border-[#eaeaea] bg-white text-[#0f0e00]">
       <div className="min-h-0 flex-1 overflow-y-auto pb-5">
         <button
         aria-label="MYITH 홈으로 이동"

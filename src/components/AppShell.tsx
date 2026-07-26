@@ -16,7 +16,7 @@ export function AppShell({ sidebar, children, variant = 'home' }: AppShellProps)
   const isQuest = variant === 'quest'
 
   return (
-    <div className="flex min-h-screen min-w-[1024px] bg-white text-[#0f0e00]">
+    <div className="flex min-h-screen min-w-[1024px] bg-white text-black">
       {sidebar}
       <main
         className={`relative min-h-screen min-w-0 flex-1 overflow-x-hidden ${
