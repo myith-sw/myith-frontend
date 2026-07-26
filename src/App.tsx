@@ -35,7 +35,6 @@ import { useAuth } from './auth/useAuth'
 import { AppShell } from './components/AppShell'
 import { ArchivePage } from './components/ArchivePage'
 import { AsyncState } from './components/AsyncState'
-import { CharacterNameStep } from './components/CharacterNameStep'
 import { EggSelectionHome } from './components/EggSelectionHome'
 import { ErrorPage } from './components/ErrorPage'
 import { JobSelection } from './components/JobSelection'
@@ -291,6 +290,11 @@ function JobRoute() {
         <JobSelection
           categories={catalog.categories}
           jobs={catalog.jobs}
+          nickname={onboarding.nickname}
+          onContinue={() => navigate('/characters/new/assessment')}
+          onNicknameChange={(nickname) =>
+            setOnboarding((current) => ({ ...current, nickname }))
+          }
           onSelectCategory={(selectedCategoryId) =>
             setOnboarding((current) => ({
               ...current,
@@ -307,9 +311,9 @@ function JobRoute() {
               selectedJob,
               diagnosis: null,
             }))
-            navigate('/characters/new/name')
           }}
           selectedCategoryId={onboarding.selectedCategoryId}
+          selectedJob={onboarding.selectedJob}
         />
       )}
     </AppShell>
@@ -317,29 +321,7 @@ function JobRoute() {
 }
 
 function NameRoute() {
-  const navigate = useNavigate()
-  const { onboarding, setOnboarding } = useApplication()
-  if (!onboarding.selectedJob) return <Navigate replace to="/characters/new/jobs" />
-
-  return (
-    <AppShell sidebar={<CharacterSidebar onHome={() => navigate('/')} />} variant="selection">
-      <CharacterNameStep
-        job={onboarding.selectedJob}
-        nickname={onboarding.nickname}
-        onContinue={() => navigate('/characters/new/assessment')}
-        onNicknameChange={(nickname) => setOnboarding((current) => ({ ...current, nickname }))}
-        onSelectCategory={(selectedCategoryId) => {
-          setOnboarding((current) => ({
-            ...current,
-            selectedCategoryId,
-            selectedJob: null,
-            diagnosis: null,
-          }))
-          navigate('/characters/new/jobs')
-        }}
-      />
-    </AppShell>
-  )
+  return <Navigate replace to="/characters/new/jobs" />
 }
 
 function AssessmentRoute() {

@@ -25,10 +25,13 @@ export function JobCard({ job, isSelected = false, onClick }: JobCardProps) {
           />
         )}
       </div>
-      <ul className="flex flex-wrap gap-[7px]" aria-label={`${job.title} 핵심 역량`}>
+      <ul
+        className="flex h-[29px] flex-nowrap gap-[7px] overflow-hidden"
+        aria-label={`${job.title} 핵심 역량`}
+      >
         {job.skills.map((skill) => (
           <li
-            className="rounded-[10px] border-[0.8px] border-[#ebebeb] bg-white px-[10px] py-[6px] text-xs font-medium opacity-50"
+            className="shrink-0 rounded-[10px] border-[0.8px] border-[#ebebeb] bg-white px-[10px] py-[6px] text-xs font-medium opacity-50"
             key={skill}
           >
             {skill}
