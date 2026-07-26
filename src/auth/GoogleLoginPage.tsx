@@ -45,6 +45,10 @@ export function GoogleLoginPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const destination = (location.state as { from?: string } | null)?.from ?? '/'
+  const requestLogin = () => {
+    setError('')
+    setIsLoginOpen(true)
+  }
 
   useEffect(() => {
     if (user) navigate(destination, { replace: true })
@@ -100,13 +104,19 @@ export function GoogleLoginPage() {
   return (
     <>
       <AppShell
-        sidebar={<Sidebar onLogin={() => setIsLoginOpen(true)} variant="unauthenticated" />}
+        sidebar={
+          <Sidebar
+            onCreateCharacter={requestLogin}
+            onHome={requestLogin}
+            onLogin={requestLogin}
+            variant="unauthenticated"
+          />
+        }
         variant="home"
       >
         <EggSelectionHome
-          disabled
-          onContinue={() => undefined}
-          onSelectEgg={() => undefined}
+          onContinue={requestLogin}
+          onSelectEgg={requestLogin}
           selectedEggId={null}
         />
       </AppShell>
