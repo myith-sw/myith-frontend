@@ -235,7 +235,7 @@ describe('QuestDetailPage STAR action', () => {
       characterChanges: { completionRate: 80 },
       quest: { questId: 'qst_1', status: 'DONE', version: 2 },
     })
-    render(<QuestDetailPage initialCompletionRate={42} onBack={vi.fn()} quest={baseQuest} />)
+    render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
 
     screen.getAllByRole('textbox').forEach((textbox, index) => {
       fireEvent.change(textbox, { target: { value: `${index + 1}번째 입력` } })
@@ -246,6 +246,7 @@ describe('QuestDetailPage STAR action', () => {
     expect(modal).toHaveTextContent('테스트 퀘스트')
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemin', '0')
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '100')
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0')
     expect(within(modal).getByRole('button', { name: '확인' })).toBeEnabled()
     expect(within(modal).getByRole('button', { name: '로드맵으로' })).toBeEnabled()
   })

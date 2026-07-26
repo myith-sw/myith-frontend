@@ -7,7 +7,6 @@ import { AIAssistModal, type StarRecord } from './AIAssistModal'
 import { QuestCompletionModal } from './QuestCompletionModal'
 
 interface QuestDetailPageProps {
-  initialCompletionRate?: number
   onBack: () => void
   onDirtyChange?: (isDirty: boolean) => void
   onUpdated?: () => void
@@ -39,7 +38,6 @@ function hasWrittenStar(record: StarRecord) {
 }
 
 export function QuestDetailPage({
-  initialCompletionRate = 0,
   onBack,
   onDirtyChange,
   onUpdated,
@@ -299,17 +297,18 @@ export function QuestDetailPage({
         originalRecord={starRecord}
         requestEnhancement={requestEnhancement}
       />
-      <QuestCompletionModal
-        initialProgress={initialCompletionRate}
-        onClose={closeCompletionModal}
-        onRoadmap={() => {
-          closeCompletionModal()
-          onBack()
-        }}
-        open={isCompletionModalOpen}
-        progress={completionResult?.characterChanges?.completionRate ?? initialCompletionRate}
-        questTitle={quest.title ?? '퀘스트'}
-      />
+      {isCompletionModalOpen && (
+        <QuestCompletionModal
+          onClose={closeCompletionModal}
+          onRoadmap={() => {
+            closeCompletionModal()
+            onBack()
+          }}
+          open
+          progress={completionResult?.characterChanges?.completionRate ?? 0}
+          questTitle={quest.title ?? '퀘스트'}
+        />
+      )}
     </section>
   )
 }

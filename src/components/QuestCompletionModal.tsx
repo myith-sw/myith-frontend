@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { questCompletionAssets } from '../assets/quest-completion'
 
 interface QuestCompletionModalProps {
-  initialProgress: number
   onClose: () => void
   onRoadmap: () => void
   open: boolean
@@ -16,7 +15,6 @@ function clampProgress(value: number) {
 }
 
 export function QuestCompletionModal({
-  initialProgress,
   onClose,
   onRoadmap,
   open,
@@ -25,12 +23,12 @@ export function QuestCompletionModal({
 }: QuestCompletionModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
-  const [displayProgress, setDisplayProgress] = useState(() => clampProgress(initialProgress))
+  const [displayProgress, setDisplayProgress] = useState(0)
 
   useEffect(() => {
     if (!open) return
 
-    const start = clampProgress(initialProgress)
+    const start = 0
     const target = clampProgress(progress)
     setDisplayProgress(start)
 
@@ -55,7 +53,7 @@ export function QuestCompletionModal({
 
     frameId = requestFrame(animate)
     return () => cancelFrame(frameId)
-  }, [initialProgress, open, progress])
+  }, [open, progress])
 
   useEffect(() => {
     if (!open) return
