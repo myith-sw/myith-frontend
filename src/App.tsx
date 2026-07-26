@@ -114,10 +114,12 @@ function toArchiveSkillStatus(status: string | undefined): ArchiveSkillStatus {
 
 function CharacterSidebar({
   activeRoadmapId,
+  isHomeActive = false,
   onBeforeNavigate = () => true,
   onHome,
 }: {
   activeRoadmapId?: string
+  isHomeActive?: boolean
   onBeforeNavigate?: () => boolean
   onHome: () => void
 }) {
@@ -136,6 +138,7 @@ function CharacterSidebar({
     <Sidebar
       activeCharacterId={activeRoadmapId}
       characters={mapped}
+      isHomeActive={isHomeActive}
       onCreateCharacter={() => {
         navigateIfAllowed(() => {
           resetOnboarding()
@@ -205,7 +208,7 @@ function HomeRoute() {
 
   return (
     <AppShell
-      sidebar={<CharacterSidebar onHome={() => navigate('/')} />}
+      sidebar={<CharacterSidebar isHomeActive onHome={() => navigate('/')} />}
       variant="hub"
     >
       <AsyncState

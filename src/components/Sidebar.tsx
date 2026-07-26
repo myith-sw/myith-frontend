@@ -11,6 +11,7 @@ interface SidebarProps {
   characters?: SidebarCharacter[]
   draftCharacter?: SidebarCharacter
   activeCharacterId?: string
+  isHomeActive?: boolean
   onHome?: () => void
   onLogin?: () => void
   onLogout?: () => void
@@ -28,6 +29,7 @@ export function Sidebar({
   characters = defaultCharacters,
   draftCharacter,
   activeCharacterId,
+  isHomeActive = false,
   onHome,
   onLogin,
   onLogout,
@@ -64,7 +66,11 @@ export function Sidebar({
         <div className="mx-auto mt-[30.28px] flex w-[213px] flex-col gap-[21px]">
         <button
           aria-label="신화 허브로 이동"
-          className="flex w-full items-center gap-[7px] rounded-sm px-[10px] py-1 text-left opacity-30 transition-opacity enabled:cursor-pointer enabled:hover:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3] disabled:cursor-default"
+          className={`flex w-full items-center gap-[7px] rounded-sm px-[10px] py-1 text-left transition-opacity enabled:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3] disabled:cursor-default ${
+            isHomeActive
+              ? 'text-[#0f0e00] opacity-100'
+              : 'opacity-30 enabled:hover:opacity-50'
+          }`}
           disabled={!onHome}
           onClick={onHome}
           type="button"

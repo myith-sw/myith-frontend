@@ -19,6 +19,15 @@ describe('Sidebar character spacing', () => {
     expect(screen.getByRole('list')).toBeInTheDocument()
   })
 
+  it('uses the full Figma ink color for the active myth hub menu', () => {
+    render(<Sidebar isHomeActive onHome={() => undefined} />)
+
+    expect(screen.getByRole('button', { name: '신화 허브로 이동' })).toHaveClass(
+      'text-[#0f0e00]',
+      'opacity-100',
+    )
+  })
+
   it('uses the larger Figma profile logout popup metrics', () => {
     render(<Sidebar profile={{ email: 'tester@myith.test', name: '테스터' }} />)
 
