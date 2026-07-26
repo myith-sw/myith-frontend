@@ -154,16 +154,16 @@ export function Sidebar({
       {profile ? (
         <div className="relative flex h-[50px] shrink-0 items-center border-t border-[#eaeaea] bg-white px-[9px]">
           {isProfileMenuOpen && (
-            <div className="absolute bottom-[51px] left-[9px] z-20 flex w-[226px] flex-col gap-2.5 rounded-[10px] border border-[#eaeaea] bg-white p-[5px] shadow-[0_8px_20px_rgba(0,0,0,0.05)]">
-              <p className="px-1 py-0.5 text-[10px] tracking-[-0.2px] text-[#656565]">
+            <div className="absolute bottom-[51px] left-[9px] z-20 flex w-[226px] flex-col gap-2.5 rounded-[10px] border border-[#eaeaea] bg-white px-[5px] py-2 shadow-[0_8px_20px_rgba(0,0,0,0.05)]">
+              <p className="px-1 text-xs tracking-[-0.24px] text-[#656565]">
                 {profile.email ?? '이메일 정보 없음'}
               </p>
               <button
-                className="flex h-[25px] w-full items-center gap-2 rounded-[10px] bg-white px-[14px] py-1 text-left text-[10px] font-medium tracking-[-0.2px] text-[#1b1b1b] hover:bg-[#f7f7f7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
+                className="flex h-[25px] w-full items-center gap-2 rounded-[10px] bg-white px-[14px] py-1 text-left text-[13px] font-medium tracking-[-0.26px] text-[#1b1b1b] hover:bg-[#efefef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
                 onClick={onLogout}
                 type="button"
               >
-                <img alt="" aria-hidden="true" className="h-[10px] w-[11.25px]" src={logoutIcon} />
+                <img alt="" aria-hidden="true" className="h-[11.556px] w-[13px]" src={logoutIcon} />
                 로그아웃
               </button>
             </div>
