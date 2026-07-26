@@ -211,6 +211,9 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
                 placeholder={field.placeholder}
                 value={starRecord[field.id]}
               />
+              <span className="text-right text-[11px] text-black/35">
+                {starRecord[field.id].length}/2000
+              </span>
             </label>
           ))}
         </div>

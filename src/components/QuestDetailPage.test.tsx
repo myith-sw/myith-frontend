@@ -48,7 +48,18 @@ describe('QuestDetailPage STAR action', () => {
       .getByRole('heading', { name: '퀘스트 기록 (STAR)' })
       .closest('article')
     expect(starSection?.querySelector('.grid-cols-2')).not.toBeInTheDocument()
-    expect(screen.queryByText('/2000', { exact: false })).not.toBeInTheDocument()
+    expect(screen.getAllByText('0/2000')).toHaveLength(4)
+  })
+
+  it('STAR 입력값에 맞춰 글자 수를 표시하고 최대 2000자로 제한한다', () => {
+    render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
+
+    const situation = screen.getByLabelText(/상황 \(Situation\)/)
+    expect(situation).toHaveAttribute('maxlength', '2000')
+
+    fireEvent.change(situation, { target: { value: '12345' } })
+    expect(screen.getByText('5/2000')).toBeInTheDocument()
+    expect(screen.getAllByText('0/2000')).toHaveLength(3)
   })
 
   it('처음 작성하는 STAR에는 완료 버튼 문구와 고정 폭을 사용한다', () => {
