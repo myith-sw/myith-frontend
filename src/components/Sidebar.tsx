@@ -117,8 +117,8 @@ export function Sidebar({
                           type="button"
                         >
                           <div className="flex w-[105px] flex-col gap-1">
-                            <span className="text-[13px] font-semibold leading-none">{character.title}</span>
-                            <span className="text-[10px] font-semibold tracking-[0.4px] opacity-50">
+                            <span className="text-[15px] font-semibold leading-none">{character.title}</span>
+                            <span className="text-xs font-semibold tracking-[0.48px] opacity-50">
                               {character.role}
                             </span>
                           </div>

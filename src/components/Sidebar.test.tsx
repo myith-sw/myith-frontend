@@ -28,6 +28,16 @@ describe('Sidebar character spacing', () => {
     )
   })
 
+  it('uses the updated Figma typography for character list entries', () => {
+    render(<Sidebar onCreateCharacter={() => undefined} />)
+
+    const characterName = screen.getByText('견습 서버 개발자')
+    const characterRole = screen.getByText('백엔드 개발자')
+
+    expect(characterName).toHaveClass('text-[15px]', 'font-semibold')
+    expect(characterRole).toHaveClass('text-xs', 'tracking-[0.48px]', 'font-semibold')
+  })
+
   it('uses the larger Figma profile logout popup metrics', () => {
     render(<Sidebar profile={{ email: 'tester@myith.test', name: '테스터' }} />)
 
