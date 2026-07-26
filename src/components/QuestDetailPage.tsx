@@ -137,6 +137,13 @@ export function QuestDetailPage({
   const canComplete = !isLocked && starFields.every(({ id }) => starRecord[id].trim())
   const canEnhance = !isLocked && (hasPersistedStar || canComplete)
   const canSubmit = canComplete && (!hasPersistedStar || isDirty || completionRetryRequired)
+  const isEditAction = hasPersistedStar && !completionRetryRequired
+  const isActionEnabled = canSubmit && !isCompleting
+  const actionButtonStyle = isActionEnabled
+    ? isEditAction
+      ? 'bg-[#6bd8d5] font-semibold text-white'
+      : 'border-[1.2px] border-[#59d8d4] bg-[#59d8d4] font-medium text-white'
+    : 'border-[1.2px] border-[#eaeaea] bg-[#f7f7f7] font-normal text-black/50'
 
   const submitStar = async () => {
     if (!quest.questId || !canSubmit || isCompleting) return
@@ -261,27 +268,19 @@ export function QuestDetailPage({
             AI로 강화하기
           </button>
           <button
-            className={`flex items-center justify-center rounded-[10px] px-5 py-3 text-sm tracking-[-0.28px] transition-colors disabled:cursor-not-allowed ${
-              hasPersistedStar && !completionRetryRequired
-                ? 'bg-[#6bd8d5] font-semibold text-white'
-                : canSubmit
-                  ? 'border-[1.2px] border-[#59d8d4] bg-[#59d8d4] font-medium text-white'
-                  : 'border-[1.2px] border-[#eaeaea] bg-[#f7f7f7] font-normal text-black/50'
-            }`}
+            className={`flex items-center justify-center rounded-[10px] px-5 py-3 text-sm tracking-[-0.28px] transition-colors disabled:cursor-not-allowed ${actionButtonStyle}`}
             disabled={!canSubmit || isCompleting}
             onClick={() => void submitStar()}
             type="button"
           >
-            <span className={`flex items-center justify-center gap-2 ${!hasPersistedStar && !canSubmit ? 'opacity-40' : ''}`}>
+            <span className={`flex items-center justify-center gap-2 ${!isActionEnabled ? 'opacity-40' : ''}`}>
               <img
                 alt=""
                 aria-hidden="true"
-                className={`h-[11.2px] w-3.5 ${
-                  (!hasPersistedStar || completionRetryRequired) && canSubmit ? 'brightness-0 invert' : ''
-                }`}
-                src={questDetailAssets.completeQuest}
+                className="h-[11.2px] w-3.5"
+                src={isActionEnabled ? questDetailAssets.editQuest : questDetailAssets.completeQuest}
               />
-              <span>{isCompleting ? '완료 처리 중…' : hasPersistedStar && !completionRetryRequired ? '수정하기' : '완료하고 역량 채우기'}</span>
+              <span>{isCompleting ? '완료 처리 중…' : isEditAction ? '수정하기' : '완료하고 역량 채우기'}</span>
             </span>
           </button>
         </div>

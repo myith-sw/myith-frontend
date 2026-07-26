@@ -5,6 +5,7 @@ import aiModalClose from './quest-detail/ai-modal-close.svg'
 import aiModalHeader from './quest-detail/ai-modal-header.svg'
 import certificate from './quest-detail/certificate.svg'
 import completeQuest from './quest-detail/complete-quest.svg'
+import editQuest from './quest-detail/edit-quest.svg'
 import ncsReference from './quest-detail/ncs-reference.svg'
 
 export const questDetailAssets = {
@@ -15,5 +16,6 @@ export const questDetailAssets = {
   aiModalHeader,
   certificate,
   completeQuest,
+  editQuest,
   ncsReference,
 }

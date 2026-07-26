@@ -72,7 +72,7 @@ describe('QuestDetailPage STAR action', () => {
     expect(button.querySelector('span')).toHaveClass('opacity-40')
   })
 
-  it('이미 작성된 STAR에는 Figma의 청록 수정하기 버튼을 표시한다', () => {
+  it('수정할 내용이 없는 저장된 STAR에는 Figma의 비활성 수정하기 버튼을 표시한다', () => {
     render(
       <QuestDetailPage
         onBack={vi.fn()}
@@ -90,9 +90,10 @@ describe('QuestDetailPage STAR action', () => {
     )
 
     const button = screen.getByRole('button', { name: '수정하기' })
-    expect(button).toHaveClass('bg-[#6bd8d5]', 'font-semibold', 'text-white')
+    expect(button).toHaveClass('border-[#eaeaea]', 'bg-[#f7f7f7]', 'font-normal', 'text-black/50')
     expect(button).toBeDisabled()
     expect(button.querySelector('img')).toHaveClass('h-[11.2px]', 'w-3.5')
+    expect(button.querySelector('span')).toHaveClass('opacity-40')
     expect(screen.queryByRole('button', { name: '완료 취소' })).not.toBeInTheDocument()
   })
 
@@ -127,10 +128,7 @@ describe('QuestDetailPage STAR action', () => {
     const button = screen.getByRole('button', { name: '완료하고 역량 채우기' })
     expect(button).toBeEnabled()
     expect(button).toHaveClass('border-[#59d8d4]', 'bg-[#59d8d4]', 'text-white')
-    expect(button.querySelector('img')).toHaveClass(
-      'brightness-0',
-      'invert',
-    )
+    expect(button.querySelector('img')?.getAttribute('src')).toContain("fill='white'")
   })
 
   it('입력값이 저장본과 달라지면 수정 상태를 상위에 알린다', () => {
@@ -157,7 +155,10 @@ describe('QuestDetailPage STAR action', () => {
 
     expect(onDirtyChange).toHaveBeenLastCalledWith(true)
     expect(screen.queryByText('저장되지 않음')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '수정하기' })).toBeEnabled()
+    const button = screen.getByRole('button', { name: '수정하기' })
+    expect(button).toBeEnabled()
+    expect(button).toHaveClass('bg-[#6bd8d5]', 'font-semibold', 'text-white')
+    expect(button.querySelector('img')?.getAttribute('src')).toContain("fill='white'")
   })
 
   it('수정사항이 있어도 이탈 확인은 라우트에서 처리하도록 로드맵 이동 콜백을 호출한다', () => {
