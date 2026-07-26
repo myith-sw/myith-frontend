@@ -33,6 +33,11 @@ describe('QuestDetailPage STAR action', () => {
 
     const button = screen.getByRole('button', { name: '완료하고 역량 채우기' })
     expect(button).toHaveClass('w-[190px]')
+    expect(button).toBeDisabled()
+    expect(button.querySelector('img')).toHaveClass(
+      'absolute',
+      'left-6',
+    )
   })
 
   it('이미 작성된 STAR에는 같은 폭의 수정하기 버튼을 표시한다', () => {
@@ -54,7 +59,28 @@ describe('QuestDetailPage STAR action', () => {
 
     const button = screen.getByRole('button', { name: '수정하기' })
     expect(button).toHaveClass('w-[190px]')
+    expect(button).toBeDisabled()
+    expect(button.querySelector('img')).toHaveClass(
+      'absolute',
+      'left-6',
+    )
     expect(screen.queryByRole('button', { name: '완료 취소' })).not.toBeInTheDocument()
+  })
+
+  it('최초 STAR 네 항목을 모두 작성하면 청록색 제출 버튼을 활성화한다', () => {
+    render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
+
+    screen.getAllByRole('textbox').forEach((textbox, index) => {
+      fireEvent.change(textbox, { target: { value: `${index + 1}번째 입력` } })
+    })
+
+    const button = screen.getByRole('button', { name: '완료하고 역량 채우기' })
+    expect(button).toBeEnabled()
+    expect(button).toHaveClass('border-[#59d8d4]', 'bg-[#59d8d4]', 'text-white')
+    expect(button.querySelector('img')).toHaveClass(
+      'brightness-0',
+      'invert',
+    )
   })
 
   it('입력값이 저장본과 달라지면 수정 상태를 상위에 알린다', () => {
@@ -81,6 +107,31 @@ describe('QuestDetailPage STAR action', () => {
 
     expect(onDirtyChange).toHaveBeenLastCalledWith(true)
     expect(screen.getByText('저장되지 않음')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '수정하기' })).toBeEnabled()
+  })
+
+  it('기존 STAR를 원래 값으로 되돌리면 수정 버튼을 다시 비활성화한다', () => {
+    render(
+      <QuestDetailPage
+        onBack={vi.fn()}
+        quest={{
+          ...baseQuest,
+          star: {
+            situation: '기존 상황',
+            task: '기존 과제',
+            action: '기존 행동',
+            result: '기존 결과',
+          },
+        }}
+      />,
+    )
+
+    const situation = screen.getByLabelText(/상황 \(Situation\)/)
+    fireEvent.change(situation, { target: { value: '수정된 상황' } })
+    expect(screen.getByRole('button', { name: '수정하기' })).toBeEnabled()
+
+    fireEvent.change(situation, { target: { value: '기존 상황' } })
+    expect(screen.getByRole('button', { name: '수정하기' })).toBeDisabled()
   })
 
   it('처음 작성한 STAR는 저장 후 퀘스트를 완료 처리한다', async () => {

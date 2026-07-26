@@ -119,9 +119,10 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
 
   const canComplete = !isLocked && starFields.every(({ id }) => starRecord[id].trim())
   const canEnhance = canComplete
+  const canSubmit = canComplete && (!hasPersistedStar || isDirty)
 
   const submitStar = async () => {
-    if (!quest.questId || !canComplete) return
+    if (!quest.questId || !canSubmit) return
     try {
       await saveNow()
       if (!hasPersistedStar) {
@@ -228,13 +229,24 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
             AI로 강화하기
           </button>
           <button
-            className="flex w-[190px] items-center justify-center gap-2 rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#f7f7f7] px-5 py-3 text-sm font-medium text-black/60 disabled:opacity-40"
-            disabled={!canComplete}
+            className={`relative flex w-[190px] items-center justify-center rounded-[10px] border-[1.2px] px-5 py-3 text-sm font-medium transition-colors ${
+              canSubmit
+                ? 'border-[#59d8d4] bg-[#59d8d4] text-white'
+                : 'border-[#eaeaea] bg-[#f7f7f7] text-black/60 opacity-40'
+            }`}
+            disabled={!canSubmit}
             onClick={() => void submitStar()}
             type="button"
           >
-            <img alt="" aria-hidden="true" className="h-[11.2px] w-3.5" src={questDetailAssets.completeQuest} />
-            {hasPersistedStar ? '수정하기' : '완료하고 역량 채우기'}
+            <img
+              alt=""
+              aria-hidden="true"
+              className={`absolute left-6 h-[11.2px] w-3.5 ${
+                canSubmit ? 'brightness-0 invert' : ''
+              }`}
+              src={questDetailAssets.completeQuest}
+            />
+            <span>{hasPersistedStar ? '수정하기' : '완료하고 역량 채우기'}</span>
           </button>
         </div>
       </article>
