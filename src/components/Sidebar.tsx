@@ -42,8 +42,8 @@ export function Sidebar({
   const profileInitial = profile?.name.trim().slice(0, 1).toLowerCase() || 'm'
 
   return (
-    <aside className="z-10 flex min-h-screen w-[244px] shrink-0 flex-col border-r border-[#eaeaea] bg-white">
-      <div>
+    <aside className="sticky top-0 z-10 flex h-screen w-[244px] shrink-0 self-start flex-col overflow-hidden border-r border-[#eaeaea] bg-white">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-5">
         <button
         aria-label="MYITH 홈으로 이동"
         className="ml-5 mt-5 block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#60d4d3] enabled:cursor-pointer"
@@ -148,7 +148,7 @@ export function Sidebar({
         </div>
       </div>
       {profile ? (
-        <div className="relative mt-auto flex h-[50px] items-center border-t border-[#eaeaea] px-[9px]">
+        <div className="relative flex h-[50px] shrink-0 items-center border-t border-[#eaeaea] bg-white px-[9px]">
           {isProfileMenuOpen && (
             <div className="absolute bottom-[51px] left-[9px] z-20 flex w-[226px] flex-col gap-2.5 rounded-[10px] border border-[#eaeaea] bg-white p-[5px] shadow-[0_8px_20px_rgba(0,0,0,0.05)]">
               <p className="px-1 py-0.5 text-[10px] tracking-[-0.2px] text-[#656565]">
@@ -184,7 +184,7 @@ export function Sidebar({
           </button>
         </div>
       ) : onLogin ? (
-        <div className="mt-auto flex h-[50px] items-center border-t border-[#eaeaea] px-5">
+        <div className="flex h-[50px] shrink-0 items-center border-t border-[#eaeaea] bg-white px-5">
           <button
             className="rounded-sm px-2.5 py-1 text-sm font-semibold tracking-[-0.28px] text-[#7dcecb] underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
             onClick={onLogin}

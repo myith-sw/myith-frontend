@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ErrorPage } from './ErrorPage'
 import { Sidebar } from './Sidebar'
@@ -55,5 +55,25 @@ describe('ErrorPage', () => {
     expect(getByText('테스트 캐릭터')).toBeInTheDocument()
     fireEvent.click(getByRole('button', { name: '테스트 캐릭터 아카이브 열기' }))
     expect(onSelectCharacter).toHaveBeenCalledWith('rmp_42')
+  })
+
+  it('페이지가 길어져도 계정 영역이 보이도록 사이드바를 화면 높이에 고정한다', () => {
+    const { container } = render(
+      <Sidebar
+        onHome={() => undefined}
+        profile={{ name: '테스트 사용자' }}
+      />,
+    )
+
+    expect(container.querySelector('aside')).toHaveClass(
+      'sticky',
+      'top-0',
+      'h-screen',
+      'overflow-hidden',
+    )
+    expect(within(container).getByRole('button', { name: '테스트 사용자 프로필 메뉴' }).parentElement).toHaveClass(
+      'shrink-0',
+      'bg-white',
+    )
   })
 })
