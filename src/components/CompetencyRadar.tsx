@@ -14,6 +14,7 @@ interface CompetencyRadarProps {
 const chartSize = 187
 const chartCenter = chartSize / 2
 const outerRadius = 88
+const labelRadius = 106
 
 function pointFor(angle: number, radius: number) {
   const radians = ((angle - 90) * Math.PI) / 180
@@ -49,11 +50,17 @@ export function CompetencyRadar({ axes }: CompetencyRadarProps) {
   )
   const polygon = scorePoints.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ')
   const scoreSummary = axes.map((axis) => `${axis.label} ${clampCompetencyScore(axis.value)}%`).join(', ')
+  const labelTextAnchor = (axisIndex: number) => {
+    const horizontalPosition = Math.cos(((axisIndex * angleStep - 90) * Math.PI) / 180)
+    if (horizontalPosition > 0.35) return 'start'
+    if (horizontalPosition < -0.35) return 'end'
+    return 'middle'
+  }
 
   return (
     <svg
       aria-label={`${axes.length}개 역량으로 구성된 다각형: ${scoreSummary}`}
-      className="size-full"
+      className="size-full overflow-visible"
       role="img"
       viewBox={`0 0 ${chartSize} ${chartSize}`}
     >
@@ -111,6 +118,23 @@ export function CompetencyRadar({ axes }: CompetencyRadarProps) {
           strokeWidth="1.75"
         />
       ))}
+      {safeAxes.map((axis, axisIndex) => {
+        const labelPoint = pointFor(axisIndex * angleStep, labelRadius)
+        return (
+          <text
+            dominantBaseline="middle"
+            fill="#7dcecb"
+            fontSize="10"
+            fontWeight="600"
+            key={`label-${axis.key}`}
+            textAnchor={labelTextAnchor(axisIndex)}
+            x={labelPoint.x}
+            y={labelPoint.y}
+          >
+            {axis.label}
+          </text>
+        )
+      })}
     </svg>
   )
 }

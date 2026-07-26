@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { CompetencyRadar } from './CompetencyRadar'
 
@@ -18,6 +18,7 @@ describe('CompetencyRadar', () => {
       'aria-label',
       expect.stringContaining(`${count}개 역량으로 구성된 다각형`),
     )
+    axes(count).forEach((axis) => expect(screen.getByText(axis.label)).toBeInTheDocument())
     unmount()
   })
 })
