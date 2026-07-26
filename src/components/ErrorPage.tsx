@@ -1,15 +1,14 @@
+import type { ReactNode } from 'react'
 import { errorAssets } from '../assets/error'
-import { Sidebar } from './Sidebar'
 
 interface ErrorPageProps {
-  onHome: () => void
-  onLogin: () => void
+  sidebar: ReactNode
 }
 
-export function ErrorPage({ onHome, onLogin }: ErrorPageProps) {
+export function ErrorPage({ sidebar }: ErrorPageProps) {
   return (
     <div className="flex min-h-screen min-w-[1024px] bg-[#fbfbfb] text-[#0f0e00]">
-      <Sidebar onHome={onHome} onLogin={onLogin} variant="unauthenticated" />
+      {sidebar}
 
       <main className="relative min-h-screen min-w-0 flex-1 overflow-hidden">
         <section
