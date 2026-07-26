@@ -137,7 +137,12 @@ function CharacterSidebar({
 function ErrorRoute() {
   const navigate = useNavigate()
 
-  return <ErrorPage onLogin={() => navigate('/login')} />
+  return (
+    <ErrorPage
+      onHome={() => navigate('/')}
+      onLogin={() => navigate('/login')}
+    />
+  )
 }
 
 function HomeRoute() {

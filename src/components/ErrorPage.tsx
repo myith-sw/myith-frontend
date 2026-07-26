@@ -2,13 +2,14 @@ import { errorAssets } from '../assets/error'
 import { Sidebar } from './Sidebar'
 
 interface ErrorPageProps {
+  onHome: () => void
   onLogin: () => void
 }
 
-export function ErrorPage({ onLogin }: ErrorPageProps) {
+export function ErrorPage({ onHome, onLogin }: ErrorPageProps) {
   return (
     <div className="flex min-h-screen min-w-[1024px] bg-[#fbfbfb] text-[#0f0e00]">
-      <Sidebar onLogin={onLogin} variant="unauthenticated" />
+      <Sidebar onHome={onHome} onLogin={onLogin} variant="unauthenticated" />
 
       <main className="relative min-h-screen min-w-0 flex-1 overflow-hidden">
         <section
