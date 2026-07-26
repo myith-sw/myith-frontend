@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import {
   completeQuest,
   createRoadmap,
+  deleteCharacter,
   getHealth,
   getJobAxes,
   getStarRecords,
@@ -78,6 +79,17 @@ describe('Swagger-compatible endpoints', () => {
     ).resolves.toMatchObject({
       quest: { questId: 'qst_17', version: 4 },
     })
+  })
+
+  it('캐릭터 ID를 인코딩해 삭제 요청을 보낸다', async () => {
+    server.use(
+      http.delete('http://localhost/api/characters/:characterId', ({ params }) => {
+        expect(params.characterId).toBe('chr test/1')
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    await expect(deleteCharacter('chr test/1')).resolves.toBeUndefined()
   })
 
   it('keeps pagination meta for STAR records', async () => {

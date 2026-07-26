@@ -187,6 +187,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/characters/{characterId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 캐릭터 삭제
+         * @description 신화 허브의 캐릭터 카드에서 삭제할 때 호출한다.
+         *     캐릭터에 연결된 로드맵과 퀘스트, STAR 기록의 삭제 정책은 백엔드에서 함께 확정해야 한다.
+         */
+        delete: operations["deleteCharacter"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/roadmaps": {
         parameters: {
             query?: never;
@@ -1516,6 +1537,48 @@ export interface operations {
                     "application/json": {
                         data?: components["schemas"]["CharacterSummary"][];
                     };
+                };
+            };
+        };
+    };
+    deleteCharacter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description 삭제할 캐릭터 ID
+                 * @example chr_01J3ABC
+                 */
+                characterId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 삭제 완료 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CHARACTER_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": {
+                     *         "code": "CHARACTER_NOT_FOUND",
+                     *         "message": "캐릭터를 찾을 수 없습니다.",
+                     *         "requestId": "req_01J3ABC"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

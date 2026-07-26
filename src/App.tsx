@@ -9,6 +9,7 @@ import {
 import {
   addQuest,
   createRoadmap,
+  deleteCharacter,
   downloadRoadmapExport,
   getDashboard,
   getDiagnosis,
@@ -90,6 +91,7 @@ function errorMessage(error: unknown, fallback: string) {
 function toMythCharacter(character: CharacterSummary): MythCharacter {
   return {
     id: character.roadmapId ?? character.characterId ?? crypto.randomUUID(),
+    resourceId: character.characterId,
     title: character.nickname ?? '이름 없는 캐릭터',
     role: character.jobName ?? '직무 미정',
     level: character.level ?? 1,
@@ -181,6 +183,8 @@ function ErrorRoute() {
 
 function HomeRoute() {
   const navigate = useNavigate()
+  const [deleteError, setDeleteError] = useState('')
+  const [deletingCharacterId, setDeletingCharacterId] = useState<string>()
   const {
     characters,
     charactersError,
@@ -214,9 +218,32 @@ function HomeRoute() {
       {charactersLoaded && !charactersLoading && !charactersError && (
         <MythHub
           characters={mapped}
+          deletingCharacterId={deletingCharacterId}
+          deleteError={deleteError}
           onCreateCharacter={() => {
             resetOnboarding()
             navigate('/characters/new/egg')
+          }}
+          onDeleteCharacter={(character) => {
+            if (!character.resourceId || deletingCharacterId) return
+            if (
+              !window.confirm(
+                `${character.title} 캐릭터를 삭제할까요?\n삭제한 캐릭터와 로드맵은 복구할 수 없습니다.`,
+              )
+            ) {
+              return
+            }
+
+            setDeleteError('')
+            setDeletingCharacterId(character.resourceId)
+            void deleteCharacter(character.resourceId)
+              .then(refreshCharacters)
+              .catch((error) => {
+                setDeleteError(
+                  errorMessage(error, '캐릭터를 삭제하지 못했습니다.'),
+                )
+              })
+              .finally(() => setDeletingCharacterId(undefined))
           }}
           onOpenArchive={(roadmapId) => navigate(`/roadmaps/${roadmapId}/archive`)}
           onOpenQuest={(character) => {

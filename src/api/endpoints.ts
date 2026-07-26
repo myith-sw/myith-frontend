@@ -95,6 +95,12 @@ export function getCharacters(status: 'active' | 'archived' | 'all' = 'active') 
   return apiRequest<CharacterSummary[]>(`/api/characters?status=${status}`)
 }
 
+export function deleteCharacter(characterId: string) {
+  return apiRequest<void>(`/api/characters/${encodeURIComponent(characterId)}`, {
+    method: 'DELETE',
+  })
+}
+
 export async function uploadProjectFile(file: File) {
   if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
     throw new Error('PDF 파일만 첨부할 수 있습니다.')

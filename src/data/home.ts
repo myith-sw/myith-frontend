@@ -22,6 +22,7 @@ export interface SidebarCharacter {
 
 export interface MythCharacter extends SidebarCharacter {
   id: string
+  resourceId?: string
   stageLabel: string
   description: string
   progress: number

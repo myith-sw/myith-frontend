@@ -306,6 +306,21 @@ export async function mockFetch(input: string, init: RequestInit = {}) {
     return json({ data: characters })
   }
 
+  const characterMatch = path.match(/^\/api\/characters\/([^/]+)$/)
+  if (characterMatch && method === 'DELETE') {
+    const characterId = decodeURIComponent(characterMatch[1])
+    const characterIndex = characters.findIndex(
+      (character) => character.characterId === characterId,
+    )
+    if (characterIndex < 0) {
+      return apiError('CHARACTER_NOT_FOUND', '캐릭터를 찾을 수 없습니다.', 404)
+    }
+
+    const [deletedCharacter] = characters.splice(characterIndex, 1)
+    roadmaps.delete(deletedCharacter.roadmapId)
+    return new Response(null, { status: 204 })
+  }
+
   if (path === '/api/roadmaps' && method === 'POST') {
     const job = availableJobs.find((candidate) => candidate.id === body?.jobCode)
     if (!job) return apiError('VALIDATION_ERROR', '직무를 확인해주세요.', 422, { jobCode: '존재하지 않는 직무입니다.' })

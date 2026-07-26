@@ -4,7 +4,10 @@ import type { MythCharacter } from '../data/home'
 
 interface MythHubProps {
   characters: MythCharacter[]
+  deletingCharacterId?: string
+  deleteError?: string
   onCreateCharacter: () => void
+  onDeleteCharacter: (character: MythCharacter) => void
   onOpenRoadmap: (characterId: string) => void
   onOpenArchive: (characterId: string) => void
   onOpenQuest: (character: MythCharacter) => void
@@ -12,15 +15,34 @@ interface MythHubProps {
 
 interface MythCardProps {
   character: MythCharacter
+  deleting: boolean
+  onDeleteCharacter: (character: MythCharacter) => void
   onOpenRoadmap: (characterId: string) => void
   onOpenArchive: (characterId: string) => void
   onOpenQuest: (character: MythCharacter) => void
 }
 
-function MythCard({ character, onOpenRoadmap, onOpenArchive, onOpenQuest }: MythCardProps) {
+function MythCard({
+  character,
+  deleting,
+  onDeleteCharacter,
+  onOpenRoadmap,
+  onOpenArchive,
+  onOpenQuest,
+}: MythCardProps) {
   return (
     <article className="flex flex-col gap-[6px]">
-      <div className="rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#fefefe] p-[10px]">
+      <div className="relative rounded-[10px] border-[1.2px] border-[#eaeaea] bg-[#fefefe] p-[10px]">
+        <button
+          aria-label={`${character.title} 캐릭터 삭제`}
+          className="absolute top-2.5 right-2.5 rounded-md px-2 py-1 text-[11px] font-medium text-[#d65454] opacity-55 transition-colors hover:bg-[#fff0f0] hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d65454] disabled:cursor-wait disabled:opacity-30"
+          disabled={deleting || !character.resourceId}
+          onClick={() => onDeleteCharacter(character)}
+          type="button"
+        >
+          {deleting ? '삭제 중' : '삭제'}
+        </button>
+
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-[30px]">
             <div className="flex size-[96px] shrink-0 items-center justify-center overflow-hidden">
@@ -117,7 +139,16 @@ function MythCard({ character, onOpenRoadmap, onOpenArchive, onOpenQuest }: Myth
   )
 }
 
-export function MythHub({ characters, onCreateCharacter, onOpenRoadmap, onOpenArchive, onOpenQuest }: MythHubProps) {
+export function MythHub({
+  characters,
+  deletingCharacterId,
+  deleteError,
+  onCreateCharacter,
+  onDeleteCharacter,
+  onOpenRoadmap,
+  onOpenArchive,
+  onOpenQuest,
+}: MythHubProps) {
   return (
     <section className="w-full">
       <header className="flex items-center justify-between pl-[11px]">
@@ -144,11 +175,22 @@ export function MythHub({ characters, onCreateCharacter, onOpenRoadmap, onOpenAr
         </button>
       </header>
 
+      {deleteError && (
+        <p
+          className="mt-5 rounded-[10px] bg-[#fff0f0] px-4 py-3 text-sm font-medium text-[#d65454]"
+          role="alert"
+        >
+          {deleteError}
+        </p>
+      )}
+
       <div className="mt-[30px] grid grid-cols-2 gap-x-4 gap-y-1.5">
         {characters.map((character) => (
           <MythCard
             character={character}
+            deleting={deletingCharacterId === character.resourceId}
             key={character.id}
+            onDeleteCharacter={onDeleteCharacter}
             onOpenArchive={onOpenArchive}
             onOpenQuest={onOpenQuest}
             onOpenRoadmap={onOpenRoadmap}
