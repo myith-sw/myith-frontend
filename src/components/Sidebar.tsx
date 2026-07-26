@@ -39,6 +39,7 @@ export function Sidebar({
   const shouldShowCharacters = variant !== 'empty'
   const shouldShowCharacterCards = variant !== 'unauthenticated'
   const visibleCharacters = variant === 'draft' && draftCharacter ? [draftCharacter] : characters
+  const hasVisibleCharacters = visibleCharacters.length > 0
   const profileInitial = profile?.name.trim().slice(0, 1).toLowerCase() || 'm'
 
   return (
@@ -81,10 +82,13 @@ export function Sidebar({
 
         {shouldShowCharacters && (
           <>
-            <section className="py-[10px]" aria-label="내 캐릭터">
-              <div className="flex flex-col gap-[23px]">
+            <section
+              aria-label="내 캐릭터"
+              className={hasVisibleCharacters ? 'py-[10px]' : 'pb-[6px] pt-[10px]'}
+            >
+              <div className={`flex flex-col ${hasVisibleCharacters ? 'gap-[23px]' : 'gap-0'}`}>
                 <p className="ml-[11px] text-[10px] font-semibold tracking-[0.4px] opacity-30">내 캐릭터</p>
-                {shouldShowCharacterCards && <ul className="flex w-[213px] flex-col gap-2.5">
+                {shouldShowCharacterCards && hasVisibleCharacters && <ul className="flex w-[213px] flex-col gap-2.5">
                   {visibleCharacters.map((character) => {
                     const isSelected = variant === 'draft' || character.id === activeCharacterId
                     const isInteractive = Boolean(character.id && onSelectCharacter)
