@@ -827,6 +827,7 @@ export interface components {
             characterId?: string;
             species?: string;
             nickname?: string;
+            level?: number;
             /** @description 캐릭터 이미지 파일명 숫자. {species}-{stage}.png */
             stage?: number;
             /**
@@ -1698,6 +1699,7 @@ export interface operations {
                      *           "characterId": "chr_01J3ABC",
                      *           "species": "deokbaseu",
                      *           "nickname": "견습 서버 개발자",
+                     *           "level": 4,
                      *           "stage": 4,
                      *           "stageLabel": "완성",
                      *           "completionRate": 80

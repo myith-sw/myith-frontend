@@ -621,6 +621,7 @@ paths:
                     characterId: chr_01J3ABC
                     species: deokbaseu
                     nickname: "견습 서버 개발자"
+                    level: 4
                     stage: 4
                     stageLabel: 완성
                     completionRate: 80
@@ -1763,6 +1764,9 @@ components:
           type: string
         nickname:
           type: string
+        level:
+          type: integer
+          minimum: 1
         stage:
           type: integer
           minimum: 1

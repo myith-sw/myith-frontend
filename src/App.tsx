@@ -598,7 +598,7 @@ function RoadmapRoute() {
         job: data.jobName ?? '',
         description: data.tagline ?? '',
         characterId: data.character?.species ?? 'teoreuteu',
-        level: Math.max(1, ...(data.levels ?? []).map((level) => level.level ?? 1)),
+        level: data.character?.level ?? 1,
         stage: data.character?.stage ?? 1,
         stageLabel: data.character?.stageLabel ?? '시작',
         progress: data.character?.completionRate ?? 0,
