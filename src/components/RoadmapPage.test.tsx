@@ -13,7 +13,7 @@ describe('RoadmapPage', () => {
       axisCode: 'api',
       category: '서버 API',
       title: '열린 퀘스트',
-      status: 'open' as const,
+      status: 'incomplete' as const,
       version: 3,
     }
     const lockedQuest = {
@@ -53,6 +53,69 @@ describe('RoadmapPage', () => {
     expect(screen.queryByRole('button', { name: '열린 퀘스트 아래로 이동' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '열린 퀘스트' }))
     expect(onOpenQuest).toHaveBeenCalledWith(openQuest)
+  })
+
+  it('레벨명은 숫자만 표시하고 완료·미완료·잠금 상태를 세 가지 UI로 렌더링한다', () => {
+    render(
+      <RoadmapPage
+        axes={[{ code: 'programming', name: '프로그래밍 기초' }]}
+        character={{
+          name: '테스트',
+          job: '백엔드 개발자',
+          description: '테스트 캐릭터',
+          characterId: 'teoreuteu',
+          level: 1,
+          stage: 1,
+          stageLabel: '입문 단계',
+          progress: 0,
+        }}
+        levels={[1]}
+        onAddQuest={vi.fn()}
+        onOpenArchive={vi.fn()}
+        onOpenQuest={vi.fn()}
+        questGroups={[
+          {
+            level: 1,
+            label: '입문 단계',
+            quests: [
+              {
+                id: 'complete',
+                level: 1,
+                category: '프로그래밍 기초',
+                title: '완료 퀘스트',
+                status: 'complete',
+              },
+              {
+                id: 'incomplete',
+                level: 1,
+                category: '프로그래밍 기초',
+                title: '미완료 퀘스트',
+                status: 'incomplete',
+              },
+              {
+                id: 'locked',
+                level: 1,
+                category: '프로그래밍 기초',
+                title: '잠금 퀘스트',
+                status: 'locked',
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getAllByText('Lv.1', { selector: 'span' })).toHaveLength(2)
+    expect(screen.queryByText('Lv.1 입문 단계', { selector: 'span' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '완료 퀘스트' })).toHaveClass(
+      'border-[#c8eeed]',
+      'bg-[rgba(215,255,254,0.4)]',
+    )
+    expect(screen.getByRole('button', { name: '미완료 퀘스트' })).toHaveClass(
+      'border-[#ffe3aa]',
+      'bg-[#faf4e7]',
+    )
+    expect(screen.getByRole('button', { name: '잠금 퀘스트 (잠김)' })).toHaveClass('bg-[#f6f6f6]')
   })
 
   it('Figma 커스텀 드롭다운에서 고른 역량과 레벨로 퀘스트를 추가한다', () => {

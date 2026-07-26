@@ -75,7 +75,7 @@ function makeQuests(roadmapId: string) {
       status:
         quest.status === 'complete'
           ? 'DONE'
-          : quest.status === 'pending'
+          : quest.status === 'incomplete'
             ? 'PENDING'
             : quest.status === 'locked'
               ? 'LOCKED'

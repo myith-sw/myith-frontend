@@ -23,17 +23,13 @@ function RoadmapQuestCard({ onOpenQuest, quest }: { onOpenQuest: (quest: Roadmap
   const isLocked = quest.status === 'locked'
   const styles = {
     complete: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
-    known: 'border-[#c8eeed] bg-[rgba(215,255,254,0.4)]',
-    pending: 'border-[#ffe3aa] bg-[rgba(255,235,198,0.4)]',
-    open: 'border-[#c8eeed] bg-white',
+    incomplete: 'border-[#ffe3aa] bg-[#faf4e7]',
     locked: 'border-transparent bg-[#f6f6f6] text-black/50',
   }[quest.status]
 
   const statusIcon = {
     complete: homeAssets.archiveSkillComplete,
-    known: homeAssets.archiveSkillComplete,
-    pending: homeAssets.archiveSkillPending,
-    open: homeAssets.archiveSkillOpen,
+    incomplete: homeAssets.archiveSkillPending,
     locked: homeAssets.archiveSkillLocked,
   }[quest.status]
 
@@ -236,7 +232,7 @@ export function RoadmapPage({
             <section className="flex flex-col gap-5" key={group.level}>
               <div className="flex items-center gap-[13px]">
                 <span className="text-sm font-semibold tracking-[-0.28px] opacity-50">
-                  Lv.{group.level}{group.label ? ` ${group.label}` : ''}
+                  Lv.{group.level}
                 </span>
                 <span className="h-px flex-1 bg-[#e5e5e5]" />
               </div>

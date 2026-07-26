@@ -46,6 +46,7 @@ import {
   archiveLevelLabels,
   type ArchiveCharacter,
   type ArchiveExperienceEntry,
+  type ArchiveSkillStatus,
   type ArchiveSkillGroup,
   type CompetencyScores,
 } from './data/archive'
@@ -58,11 +59,11 @@ import {
   type JobCategory,
   type JobOption,
 } from './data/onboarding'
-import type {
-  RoadmapCharacter,
-  RoadmapQuest,
-  RoadmapQuestGroup,
-  RoadmapQuestStatus,
+import {
+  toRoadmapQuestStatus,
+  type RoadmapCharacter,
+  type RoadmapQuest,
+  type RoadmapQuestGroup,
 } from './data/roadmap'
 import {
   questDetailPath,
@@ -99,7 +100,7 @@ function toMythCharacter(character: CharacterSummary): MythCharacter {
   }
 }
 
-function toQuestStatus(status: string | undefined): RoadmapQuestStatus {
+function toArchiveSkillStatus(status: string | undefined): ArchiveSkillStatus {
   if (status === 'DONE') return 'complete'
   if (status === 'ALREADY_KNOWN') return 'known'
   if (status === 'PENDING') return 'pending'
@@ -528,7 +529,7 @@ function RoadmapRoute() {
           axisCode: quest.axisCode,
           category: quest.axisName ?? '',
           title: quest.title ?? '',
-          status: toQuestStatus(quest.status),
+          status: toRoadmapQuestStatus(quest.status),
           version: quest.version ?? 0,
         })),
       })),
@@ -691,7 +692,7 @@ function ArchiveRoute() {
     label: archiveLevelLabels[group.level ?? 1] ?? '',
     skills: (group.quests ?? []).map((quest) => ({
       category: quest.axisName ?? '',
-      status: toQuestStatus(quest.status),
+      status: toArchiveSkillStatus(quest.status),
       title: quest.title ?? '',
     })),
   }))

@@ -1,4 +1,10 @@
-export type RoadmapQuestStatus = 'complete' | 'known' | 'pending' | 'open' | 'locked'
+export type RoadmapQuestStatus = 'complete' | 'incomplete' | 'locked'
+
+export function toRoadmapQuestStatus(status: string | undefined): RoadmapQuestStatus {
+  if (status === 'DONE' || status === 'ALREADY_KNOWN') return 'complete'
+  if (status === 'LOCKED') return 'locked'
+  return 'incomplete'
+}
 
 export interface RoadmapCharacter {
   name: string
@@ -42,7 +48,7 @@ export const initialRoadmapQuestGroups: RoadmapQuestGroup[] = [
     quests: [
       { id: 'algorithm', level: 2, category: 'CS·자료구조', title: '자료구조·알고리즘 기초를 안다', status: 'complete' },
       { id: 'database', level: 2, category: '데이터베이스', title: '데이터베이스를 다룰 수 있다', status: 'complete' },
-      { id: 'version-control', level: 2, category: '협업·형상관리', title: '버전관리로 협업한다', status: 'pending' },
+      { id: 'version-control', level: 2, category: '협업·형상관리', title: '버전관리로 협업한다', status: 'incomplete' },
     ],
   },
   {
@@ -51,15 +57,15 @@ export const initialRoadmapQuestGroups: RoadmapQuestGroup[] = [
     quests: [
       { id: 'rest-api', level: 3, category: '서버·API', title: 'REST API 서버를 구현한다', status: 'complete' },
       { id: 'security', level: 3, category: '서버·API', title: '인증·보안 기초를 적용한다', status: 'complete' },
-      { id: 'testing', level: 3, category: '프로그래밍 기초', title: '테스트 코드를 작성한다', status: 'pending' },
+      { id: 'testing', level: 3, category: '프로그래밍 기초', title: '테스트 코드를 작성한다', status: 'incomplete' },
     ],
   },
   {
     level: 4,
     label: '전설 단계',
     quests: [
-      { id: 'deployment', level: 4, category: '배포·운영', title: '서비스를 배포해본다', status: 'pending' },
-      { id: 'container-ci', level: 4, category: '배포·운영', title: '컨테이너·CI를 맛본다', status: 'pending' },
+      { id: 'deployment', level: 4, category: '배포·운영', title: '서비스를 배포해본다', status: 'incomplete' },
+      { id: 'container-ci', level: 4, category: '배포·운영', title: '컨테이너·CI를 맛본다', status: 'incomplete' },
     ],
   },
   {
