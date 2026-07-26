@@ -15,7 +15,6 @@ import {
   getJobs,
   getQuest,
   getRoadmap,
-  reorderQuest,
   subscribeRoadmapProgress,
   uploadProjectFile,
 } from './api/endpoints'
@@ -576,25 +575,6 @@ function RoadmapRoute() {
             void addQuest(roadmapId, input)
               .then(() => load())
               .catch((nextError) => setMutationError(errorMessage(nextError, '퀘스트 추가에 실패했습니다.')))
-          }}
-          onMoveQuest={(quest, targetIndex) => {
-            setMutationError('')
-            void reorderQuest(roadmapId, {
-              questId: quest.id,
-              targetLevel: quest.level,
-              targetIndex,
-              version: quest.version ?? 0,
-            })
-              .then(() => load())
-              .catch((nextError) => {
-                const message = errorMessage(nextError, '퀘스트 순서를 변경하지 못했습니다.')
-                setMutationError(
-                  message.includes('최신 상태')
-                    ? `${message} 최신 로드맵을 불러왔으니 다시 시도해주세요.`
-                    : message,
-                )
-                void load()
-              })
           }}
           onOpenArchive={() => navigate(`/roadmaps/${roadmapId}/archive`)}
           onOpenQuest={(quest) => navigate(`/quests/${quest.id}`)}

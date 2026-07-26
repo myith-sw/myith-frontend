@@ -5,8 +5,7 @@ import { RoadmapPage } from './RoadmapPage'
 afterEach(cleanup)
 
 describe('RoadmapPage', () => {
-  it('잠긴 퀘스트의 진입을 막고 실제 ID와 목표 순서를 이동 콜백에 전달한다', () => {
-    const onMoveQuest = vi.fn()
+  it('잠긴 퀘스트의 진입을 막고 순서 변경 버튼을 표시하지 않는다', () => {
     const onOpenQuest = vi.fn()
     const openQuest = {
       id: 'quest-open',
@@ -39,7 +38,6 @@ describe('RoadmapPage', () => {
         }}
         levels={[1]}
         onAddQuest={vi.fn()}
-        onMoveQuest={onMoveQuest}
         onOpenArchive={vi.fn()}
         onOpenQuest={onOpenQuest}
         questGroups={[{ level: 1, label: '입문', quests: [openQuest, lockedQuest] }]}
@@ -51,8 +49,10 @@ describe('RoadmapPage', () => {
     fireEvent.click(lockedButton)
     expect(onOpenQuest).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByRole('button', { name: '열린 퀘스트 아래로 이동' }))
-    expect(onMoveQuest).toHaveBeenCalledWith(openQuest, 1)
+    expect(screen.queryByRole('button', { name: '열린 퀘스트 위로 이동' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '열린 퀘스트 아래로 이동' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '열린 퀘스트' }))
+    expect(onOpenQuest).toHaveBeenCalledWith(openQuest)
   })
 
   it('Figma 커스텀 드롭다운에서 고른 역량과 레벨로 퀘스트를 추가한다', () => {
@@ -76,7 +76,6 @@ describe('RoadmapPage', () => {
         }}
         levels={[1, 2]}
         onAddQuest={onAddQuest}
-        onMoveQuest={vi.fn()}
         onOpenArchive={vi.fn()}
         onOpenQuest={vi.fn()}
         questGroups={[]}

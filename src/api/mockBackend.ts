@@ -383,32 +383,6 @@ export async function mockFetch(input: string, init: RequestInit = {}) {
     return json({ data: quest }, 201)
   }
 
-  const reorderQuestMatch = path.match(/^\/api\/roadmaps\/([^/]+)\/quests\/order$/)
-  if (reorderQuestMatch && method === 'PATCH') {
-    const roadmap = roadmaps.get(reorderQuestMatch[1])
-    if (!roadmap) return apiError('NOT_FOUND', '로드맵을 찾을 수 없습니다.', 404)
-    const quest = roadmap.quests.find((candidate) => candidate.questId === body.questId)
-    if (!quest) return apiError('NOT_FOUND', '퀘스트를 찾을 수 없습니다.', 404)
-    if (body.version !== quest.version) {
-      return apiError('VERSION_CONFLICT', '최신 상태를 다시 불러와주세요.', 409)
-    }
-
-    const levelQuests = roadmap.quests
-      .filter((candidate) => candidate.level === Number(body.targetLevel))
-      .sort((a, b) => a.order - b.order)
-    const currentIndex = levelQuests.findIndex((candidate) => candidate.questId === quest.questId)
-    if (currentIndex < 0) return apiError('VALIDATION_ERROR', '같은 레벨 안에서만 이동할 수 있습니다.', 422)
-
-    const [movedQuest] = levelQuests.splice(currentIndex, 1)
-    const targetIndex = Math.max(0, Math.min(Number(body.targetIndex), levelQuests.length))
-    levelQuests.splice(targetIndex, 0, movedQuest)
-    levelQuests.forEach((candidate, index) => {
-      candidate.order = index + 1
-      candidate.version += 1
-    })
-    return json({ data: roadmapResponse(roadmap) })
-  }
-
   const questMatch = path.match(/^\/api\/quests\/([^/]+)$/)
   if (questMatch && method === 'GET') {
     const found = findQuest(questMatch[1])

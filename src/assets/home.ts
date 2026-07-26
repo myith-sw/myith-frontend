@@ -6,7 +6,6 @@ import archiveSkillChevron from './archive/skill-chevron.svg'
 import archiveSkillComplete from './archive/skill-complete.svg'
 import archiveSkillLocked from './roadmap/skill-locked.png'
 import archiveSkillOpen from './archive/skill-open.svg'
-import archiveSkillOpenIndicator from './archive/skill-open-indicator.svg'
 import archiveSkillPending from './archive/skill-pending.svg'
 import archiveIcon from './home/archive-icon.svg'
 import background from './home/background.png'
@@ -27,7 +26,6 @@ export const homeAssets = {
   archiveSkillComplete,
   archiveSkillLocked,
   archiveSkillOpen,
-  archiveSkillOpenIndicator,
   archiveSkillPending,
   background,
   ctaArrow,

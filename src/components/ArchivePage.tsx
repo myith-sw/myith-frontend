@@ -53,16 +53,6 @@ function SkillCard({ skill }: { skill: ArchiveSkill }) {
   return (
     <div className={`flex min-h-[75px] items-center justify-between rounded-[20px] border-[1.2px] p-4 ${styles}`}>
       <div className="flex min-w-0 items-center gap-3">
-        {skill.status === 'open' && (
-          <img
-            alt=""
-            aria-hidden="true"
-            className="h-[13.332px] w-2 shrink-0"
-            height={13.332}
-            src={homeAssets.archiveSkillOpenIndicator}
-            width={8}
-          />
-        )}
         <img
           alt=""
           aria-hidden="true"

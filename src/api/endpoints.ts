@@ -152,16 +152,6 @@ export function deleteQuest(roadmapId: string, questId: string) {
   )
 }
 
-export function reorderQuest(
-  roadmapId: string,
-  input: { questId: string; targetLevel: number; targetIndex: number; version: number },
-) {
-  return apiRequest<RoadmapDetail>(`/api/roadmaps/${encodeURIComponent(roadmapId)}/quests/order`, {
-    method: 'PATCH',
-    body: JSON.stringify(input),
-  })
-}
-
 export function getQuest(questId: string) {
   return apiRequest<QuestDetail>(`/api/quests/${encodeURIComponent(questId)}`)
 }

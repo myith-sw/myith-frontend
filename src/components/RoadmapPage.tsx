@@ -15,7 +15,6 @@ interface RoadmapPageProps {
   levels: number[]
   questGroups: RoadmapQuestGroup[]
   onAddQuest: (quest: { title: string; axisCode: string; level: number }) => void
-  onMoveQuest: (quest: RoadmapQuest, targetIndex: number) => void
   onOpenArchive: () => void
   onOpenQuest: (quest: RoadmapQuest) => void
 }
@@ -81,7 +80,6 @@ export function RoadmapPage({
   levels,
   questGroups,
   onAddQuest,
-  onMoveQuest,
   onOpenArchive,
   onOpenQuest,
 }: RoadmapPageProps) {
@@ -159,7 +157,7 @@ export function RoadmapPage({
           <div className="flex w-[364px] flex-col gap-2.5">
             <h2 className="text-[22px] font-semibold tracking-[-0.44px]">로드맵 퀘스트</h2>
             <p className="text-[13px] font-medium tracking-[-0.26px] opacity-50">
-              같은 단계의 퀘스트는 원하는 순서로 조정하며 성장 루트를 만들 수 있어요.
+              단계별 퀘스트를 완료하며 나만의 성장 로드맵을 만들어보세요.
             </p>
           </div>
           <button
@@ -243,30 +241,8 @@ export function RoadmapPage({
                 <span className="h-px flex-1 bg-[#e5e5e5]" />
               </div>
               <div className="flex flex-col gap-2.5">
-                {group.quests.map((quest, index) => (
-                  <div className="flex items-center gap-2" key={quest.id}>
-                    <RoadmapQuestCard onOpenQuest={onOpenQuest} quest={quest} />
-                    <div className="flex shrink-0 flex-col gap-1">
-                      <button
-                        aria-label={`${quest.title} 위로 이동`}
-                        className="flex size-8 items-center justify-center rounded-lg border border-[#e5e5e5] bg-white text-sm disabled:cursor-default disabled:opacity-30"
-                        disabled={index === 0}
-                        onClick={() => onMoveQuest(quest, index - 1)}
-                        type="button"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        aria-label={`${quest.title} 아래로 이동`}
-                        className="flex size-8 items-center justify-center rounded-lg border border-[#e5e5e5] bg-white text-sm disabled:cursor-default disabled:opacity-30"
-                        disabled={index === group.quests.length - 1}
-                        onClick={() => onMoveQuest(quest, index + 1)}
-                        type="button"
-                      >
-                        ↓
-                      </button>
-                    </div>
-                  </div>
+                {group.quests.map((quest) => (
+                  <RoadmapQuestCard key={quest.id} onOpenQuest={onOpenQuest} quest={quest} />
                 ))}
               </div>
             </section>
