@@ -194,12 +194,12 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
           </span>
         </div>
 
-        <div className="mt-[18px] grid grid-cols-2 gap-3">
+        <div className="mt-[18px] flex flex-col gap-2.5">
           {starFields.map((field) => (
             <label className="flex flex-col gap-2" key={field.id}>
               <span className="w-fit rounded-[13px] bg-[#59d8d4] px-3 py-1.5 text-sm font-medium text-white">{field.label}</span>
               <textarea
-                className="h-[85px] resize-none rounded-[10px] border border-[#e4e4e4] px-[14px] py-[14px] text-[13px] font-medium outline-none placeholder:text-black/50 focus:border-[#7dcecb] focus:ring-2 focus:ring-[#7dcecb]/20"
+                className="h-[85px] min-h-[85px] w-full resize-y rounded-[10px] border border-[#e4e4e4] px-[14px] py-2.5 text-[13px] font-medium tracking-[0.52px] outline-none placeholder:text-black/50 focus:border-[#7dcecb] focus:ring-2 focus:ring-[#7dcecb]/20"
                 disabled={isLocked}
                 maxLength={2000}
                 onChange={(event) => {
@@ -211,7 +211,6 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
                 placeholder={field.placeholder}
                 value={starRecord[field.id]}
               />
-              <span className="text-right text-[11px] text-black/35">{starRecord[field.id].length}/2000</span>
             </label>
           ))}
         </div>

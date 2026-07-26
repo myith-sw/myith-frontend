@@ -28,6 +28,29 @@ afterEach(() => {
 })
 
 describe('QuestDetailPage STAR action', () => {
+  it('STAR 입력을 한 줄에 하나씩 배치하고 세로 크기 조절을 허용한다', () => {
+    render(
+      <QuestDetailPage onBack={vi.fn()} quest={baseQuest} />,
+    )
+
+    const textareas = screen.getAllByRole('textbox')
+    expect(textareas).toHaveLength(4)
+    textareas.forEach((textarea) => {
+      expect(textarea).toHaveClass(
+        'h-[85px]',
+        'min-h-[85px]',
+        'w-full',
+        'resize-y',
+      )
+      expect(textarea.parentElement).toHaveClass('flex-col')
+    })
+    const starSection = screen
+      .getByRole('heading', { name: '퀘스트 기록 (STAR)' })
+      .closest('article')
+    expect(starSection?.querySelector('.grid-cols-2')).not.toBeInTheDocument()
+    expect(screen.queryByText('/2000', { exact: false })).not.toBeInTheDocument()
+  })
+
   it('처음 작성하는 STAR에는 완료 버튼 문구와 고정 폭을 사용한다', () => {
     render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
 
