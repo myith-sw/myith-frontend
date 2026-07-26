@@ -24,12 +24,19 @@ const initialOnboarding: OnboardingState = {
 export function ApplicationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const [characters, setCharacters] = useState<CharacterSummary[]>([])
+  const [charactersLoaded, setCharactersLoaded] = useState(false)
   const [charactersLoading, setCharactersLoading] = useState(false)
   const [charactersError, setCharactersError] = useState('')
   const [onboarding, setOnboarding] = useState<OnboardingState>(initialOnboarding)
 
   const refreshCharacters = useCallback(async () => {
-    if (!user) return
+    if (!user) {
+      setCharacters([])
+      setCharactersLoaded(false)
+      setCharactersLoading(false)
+      return
+    }
+
     setCharactersLoading(true)
     setCharactersError('')
     try {
@@ -37,6 +44,7 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       setCharactersError(error instanceof Error ? error.message : '캐릭터를 불러오지 못했습니다.')
     } finally {
+      setCharactersLoaded(true)
       setCharactersLoading(false)
     }
   }, [user])
@@ -56,6 +64,7 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
     () => ({
       characters,
       charactersError,
+      charactersLoaded,
       charactersLoading,
       onboarding,
       refreshCharacters,
@@ -65,6 +74,7 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
     [
       characters,
       charactersError,
+      charactersLoaded,
       charactersLoading,
       onboarding,
       refreshCharacters,

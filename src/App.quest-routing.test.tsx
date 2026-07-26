@@ -42,6 +42,7 @@ vi.mock('./app/useApplication', () => ({
       },
     ],
     charactersError: '',
+    charactersLoaded: true,
     charactersLoading: false,
     onboarding: {
       answers: {},

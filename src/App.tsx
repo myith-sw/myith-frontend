@@ -184,11 +184,22 @@ function HomeRoute() {
   const {
     characters,
     charactersError,
+    charactersLoaded,
     charactersLoading,
     refreshCharacters,
     resetOnboarding,
   } = useApplication()
   const mapped = characters.map(toMythCharacter)
+  const isResolvingCharacters = !charactersLoaded || charactersLoading
+
+  if (
+    charactersLoaded &&
+    !charactersLoading &&
+    !charactersError &&
+    characters.length === 0
+  ) {
+    return <Navigate replace to="/characters/new/egg" />
+  }
 
   return (
     <AppShell
@@ -197,10 +208,10 @@ function HomeRoute() {
     >
       <AsyncState
         error={charactersError}
-        loading={charactersLoading}
+        loading={isResolvingCharacters}
         onRetry={() => void refreshCharacters()}
       />
-      {!charactersLoading && !charactersError && (
+      {charactersLoaded && !charactersLoading && !charactersError && (
         <MythHub
           characters={mapped}
           onCreateCharacter={() => {

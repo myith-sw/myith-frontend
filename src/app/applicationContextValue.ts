@@ -16,6 +16,7 @@ export interface OnboardingState {
 export interface ApplicationContextValue {
   characters: CharacterSummary[]
   charactersError: string
+  charactersLoaded: boolean
   charactersLoading: boolean
   onboarding: OnboardingState
   refreshCharacters: () => Promise<void>
