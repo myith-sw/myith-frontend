@@ -719,9 +719,7 @@ function QuestRoute() {
       {quest && activeRoadmapId && !loading && !error && (
         <QuestDetailPage
           onBack={() => {
-            if (confirmNavigation()) {
-              navigate(`/roadmaps/${activeRoadmapId}`)
-            }
+            navigate(`/roadmaps/${activeRoadmapId}`)
           }}
           onDirtyChange={setHasUnsavedChanges}
           onUpdated={() => {

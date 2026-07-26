@@ -3,6 +3,7 @@ import { completeQuest, pollAiEnhancement, requestAiEnhancement, saveStar } from
 import type { QuestDetail, StarInput } from '../api/types'
 import { homeAssets } from '../assets/home'
 import { questDetailAssets } from '../assets/quest-detail'
+import { confirmDiscardChanges } from '../routing/unsavedChanges'
 import { AIAssistModal, type StarRecord } from './AIAssistModal'
 
 interface QuestDetailPageProps {
@@ -63,11 +64,13 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
 
   useEffect(() => {
     onDirtyChange?.(isDirty)
+  }, [isDirty, onDirtyChange])
 
+  useEffect(() => {
     return () => {
       onDirtyChange?.(false)
     }
-  }, [isDirty, onDirtyChange])
+  }, [onDirtyChange])
 
   const saveNow = useCallback(async (source: 'manual' | 'ai-assisted' = 'manual', aiEnhancementId?: string) => {
     if (!quest.questId || isLocked) return
@@ -143,7 +146,11 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
     <section className="w-full pb-24">
       <button
         className="flex items-center gap-[6px] text-sm font-medium tracking-[-0.28px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60d4d3]"
-        onClick={onBack}
+        onClick={() => {
+          if (confirmDiscardChanges(isDirty)) {
+            onBack()
+          }
+        }}
         type="button"
       >
         <img alt="" aria-hidden="true" className="h-2.5 w-[11.6px] rotate-180" src={homeAssets.archiveBackArrow} />
@@ -188,9 +195,7 @@ export function QuestDetailPage({ onBack, onDirtyChange, onUpdated, quest }: Que
                 ? '저장됨'
                 : saveState === 'error'
                   ? '저장 실패'
-                  : isDirty
-                    ? '저장되지 않음'
-                    : ''}
+                  : ''}
           </span>
         </div>
 
