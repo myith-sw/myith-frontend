@@ -6,7 +6,12 @@ import {
   type ReactNode,
 } from 'react'
 import { authStore } from '../api/authStore'
-import { getMe, loginWithGoogle, restoreSession } from '../api/endpoints'
+import {
+  getCharacters,
+  getMe,
+  loginWithGoogle,
+  restoreSession,
+} from '../api/endpoints'
 import type { UserResponse } from '../api/types'
 import { AuthContext } from './authContextValue'
 
@@ -34,8 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (idToken: string) => {
     const result = await loginWithGoogle(idToken)
     const nextUser = await getMe()
+    const characters = await getCharacters()
     setUser(nextUser)
-    return { isNewUser: Boolean(result.isNewUser) }
+    return {
+      hasCharacters: characters.length > 0,
+      isNewUser: Boolean(result.isNewUser),
+    }
   }, [])
 
   const logout = useCallback(() => {

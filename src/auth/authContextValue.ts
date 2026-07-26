@@ -4,7 +4,10 @@ import type { UserResponse } from '../api/types'
 export interface AuthContextValue {
   loading: boolean
   user: UserResponse | null
-  login: (idToken: string) => Promise<{ isNewUser: boolean }>
+  login: (idToken: string) => Promise<{
+    hasCharacters: boolean
+    isNewUser: boolean
+  }>
   logout: () => void
 }
 

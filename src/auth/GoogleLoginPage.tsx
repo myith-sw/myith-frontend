@@ -41,6 +41,7 @@ export function GoogleLoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const googleButtonRef = useRef<HTMLDivElement>(null)
+  const loginAttemptRef = useRef(false)
   const [error, setError] = useState('')
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -51,16 +52,18 @@ export function GoogleLoginPage() {
   }
 
   useEffect(() => {
-    if (user) navigate(destination, { replace: true })
+    if (user && !loginAttemptRef.current) navigate(destination, { replace: true })
   }, [destination, navigate, user])
 
   const completeLogin = useCallback(async (credential: string) => {
+    loginAttemptRef.current = true
     setSubmitting(true)
     setError('')
     try {
       const result = await login(credential)
-      navigate(result.isNewUser ? '/characters/new/egg' : destination, { replace: true })
+      navigate(result.hasCharacters ? destination : '/characters/new/egg', { replace: true })
     } catch (nextError) {
+      loginAttemptRef.current = false
       setError(nextError instanceof Error ? nextError.message : '로그인에 실패했습니다.')
     } finally {
       setSubmitting(false)

@@ -13,7 +13,7 @@ vi.mock('./api/endpoints', async (importOriginal) => ({
 vi.mock('./auth/useAuth', () => ({
   useAuth: () => ({
     loading: false,
-    login: vi.fn(),
+    login: vi.fn(async () => ({ hasCharacters: true, isNewUser: false })),
     logout: vi.fn(),
     user: {
       email: 'tester@myith.test',
