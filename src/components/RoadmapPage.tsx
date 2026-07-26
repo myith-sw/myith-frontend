@@ -206,14 +206,14 @@ export function RoadmapPage({
               value={questTitle}
             />
             <div className="mt-3 flex items-center gap-3">
-              <CustomSelect
+              <CustomSelect<string>
                 ariaLabel="역량 분류"
                 className="flex-1"
                 onChange={setQuestAxisCode}
                 options={axes.map((axis) => ({ label: axis.name, value: axis.code }))}
                 value={questAxisCode}
               />
-              <CustomSelect
+              <CustomSelect<number>
                 ariaLabel="퀘스트 레벨"
                 className="w-[143px] shrink-0"
                 onChange={setQuestLevel}
