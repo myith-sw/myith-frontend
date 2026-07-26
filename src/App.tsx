@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Navigate,
   Route,
@@ -50,7 +50,10 @@ import {
   type ArchiveSkillGroup,
   type CompetencyScores,
 } from './data/archive'
-import type { MythCharacter } from './data/home'
+import {
+  createEggOptions,
+  type MythCharacter,
+} from './data/home'
 import {
   createEmptyProjectExperience,
   jobCategories as localJobCategories,
@@ -196,13 +199,30 @@ function HomeRoute() {
 
 function EggRoute() {
   const navigate = useNavigate()
-  const { onboarding, setOnboarding } = useApplication()
+  const { characters, onboarding, setOnboarding } = useApplication()
+  const selectedEggIdRef = useRef(onboarding.selectedEggId)
+  selectedEggIdRef.current = onboarding.selectedEggId
+  const ownedSpeciesKey = characters
+    .map((character) => character.species)
+    .filter((species): species is string => Boolean(species))
+    .sort()
+    .join(',')
+  const availableEggOptions = useMemo(
+    () => createEggOptions(
+      ownedSpeciesKey ? ownedSpeciesKey.split(',') : [],
+      3,
+      selectedEggIdRef.current,
+    ),
+    [ownedSpeciesKey],
+  )
+
   return (
     <AppShell
       sidebar={<CharacterSidebar onHome={() => navigate('/')} />}
       variant="home"
     >
       <EggSelectionHome
+        eggOptions={availableEggOptions}
         onContinue={() => navigate('/characters/new/jobs')}
         onSelectEgg={(selectedEggId) => setOnboarding((current) => ({ ...current, selectedEggId }))}
         selectedEggId={onboarding.selectedEggId}

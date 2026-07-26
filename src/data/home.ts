@@ -1,15 +1,16 @@
-import { homeAssets } from '../assets/home'
+import {
+  characterAssets,
+  characterCatalog,
+  type CharacterId,
+} from '../assets/characters'
 import type { CompetencyScores } from './archive'
-import type { CSSProperties } from 'react'
 
-export type EggId = 'teoreuteu' | 'migeo' | 'soongeo'
+export type EggId = CharacterId
 
 export interface EggOption {
   id: EggId
   asset: string
   alt: string
-  spriteFrameStyle: CSSProperties
-  spriteImageStyle: CSSProperties
 }
 
 export interface SidebarCharacter {
@@ -31,59 +32,41 @@ export interface MythCharacter extends SidebarCharacter {
   competencies: CompetencyScores
 }
 
-export const eggOptions: EggOption[] = [
-  {
-    id: 'teoreuteu',
-    asset: homeAssets.eggTeoreuteuSprite,
-    alt: '터르트 egg',
-    spriteFrameStyle: {
-      width: 70.707,
-      height: 89.562,
-      left: 'calc(50% + 1.18px)',
-      top: 'calc(50% - 1.18px)',
-    },
-    spriteImageStyle: {
-      width: '512%',
-      height: '269.47%',
-      left: '-10%',
-      top: '-92.11%',
-    },
-  },
-  {
-    id: 'migeo',
-    asset: homeAssets.eggMigeoSprite,
-    alt: '미거 egg',
-    spriteFrameStyle: {
-      width: 89.562,
-      height: 101.347,
-      left: 'calc(50% + 1.18px)',
-      top: '50%',
-    },
-    spriteImageStyle: {
-      width: '440%',
-      height: '218.84%',
-      left: '-7.89%',
-      top: '-65.12%',
-    },
-  },
-  {
-    id: 'soongeo',
-    asset: homeAssets.eggSoongeoSprite,
-    alt: '소옹어 egg',
-    spriteFrameStyle: {
-      width: 65.993,
-      height: 75.421,
-      left: 'calc(50% + 1.18px)',
-      top: 'calc(50% - 1.18px)',
-    },
-    spriteImageStyle: {
-      width: '517.14%',
-      height: '339.38%',
-      left: '-14.29%',
-      top: '-125%',
-    },
-  },
-]
+function toEggOption(character: (typeof characterCatalog)[number]): EggOption {
+  return {
+    id: character.id,
+    asset: characterAssets[character.id][1],
+    alt: `${character.name} egg`,
+  }
+}
+
+export const eggOptions: EggOption[] = characterCatalog
+  .filter(({ id }) => ['teoreuteu', 'migeo', 'soongeo'].includes(id))
+  .map(toEggOption)
+
+export function createEggOptions(
+  ownedSpecies: string[] = [],
+  count = 3,
+  preferredId?: EggId | null,
+  random: () => number = Math.random,
+) {
+  const owned = new Set(ownedSpecies)
+  const available = characterCatalog.filter(({ id }) => !owned.has(id))
+  const preferred = preferredId
+    ? available.find(({ id }) => id === preferredId)
+    : undefined
+  const shuffled = available.filter(({ id }) => id !== preferred?.id)
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(random() * (index + 1))
+    ;[shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]]
+  }
+
+  return [
+    ...(preferred ? [preferred] : []),
+    ...shuffled,
+  ].slice(0, count).map(toEggOption)
+}
 
 export const mythCharacters: MythCharacter[] = [
   {

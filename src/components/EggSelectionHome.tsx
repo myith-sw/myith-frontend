@@ -1,8 +1,13 @@
 import { homeAssets } from '../assets/home'
-import { eggOptions, type EggId } from '../data/home'
+import {
+  eggOptions as defaultEggOptions,
+  type EggId,
+  type EggOption,
+} from '../data/home'
 
 interface EggSelectionHomeProps {
   disabled?: boolean
+  eggOptions?: EggOption[]
   selectedEggId: EggId | null
   onSelectEgg: (eggId: EggId) => void
   onContinue: () => void
@@ -10,6 +15,7 @@ interface EggSelectionHomeProps {
 
 export function EggSelectionHome({
   disabled = false,
+  eggOptions = defaultEggOptions,
   selectedEggId,
   onSelectEgg,
   onContinue,
@@ -49,23 +55,21 @@ export function EggSelectionHome({
                     alt=""
                     aria-hidden="true"
                     className="pointer-events-none absolute left-1/2 top-1/2 size-[188px] max-w-none -translate-x-1/2 -translate-y-1/2"
+                    draggable={false}
                     height={188}
                     src={homeAssets.selectionGlow}
                     width={188}
                   />
                 )}
-                <span
-                  className="absolute -translate-x-1/2 -translate-y-1/2 overflow-hidden"
-                  style={egg.spriteFrameStyle}
-                >
-                  <img
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute max-w-none"
-                    src={egg.asset}
-                    style={egg.spriteImageStyle}
-                  />
-                </span>
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none size-full object-contain"
+                  draggable={false}
+                  height={176.768}
+                  src={egg.asset}
+                  width={176.768}
+                />
               </button>
             )
           })}
@@ -82,6 +86,7 @@ export function EggSelectionHome({
             alt=""
             aria-hidden="true"
             className="size-3"
+            draggable={false}
             height={12}
             src={homeAssets.ctaArrow}
             width={12}

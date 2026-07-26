@@ -11,9 +11,6 @@ import archiveSkillPending from './archive/skill-pending.svg'
 import archiveIcon from './home/archive-icon.svg'
 import background from './home/background.png'
 import ctaArrow from './home/cta-arrow.svg'
-import eggMigeoSprite from './home/egg-migeo-sprite.png'
-import eggSoongeoSprite from './home/egg-soongeo-sprite.png'
-import eggTeoreuteuSprite from './home/egg-teoreuteu-sprite.png'
 import hubIcon from './home/hub-icon.svg'
 import nextQuestChevron from './home/next-quest-chevron.svg'
 import roadmapArrow from './home/roadmap-arrow.svg'
@@ -34,9 +31,6 @@ export const homeAssets = {
   archiveSkillPending,
   background,
   ctaArrow,
-  eggMigeoSprite,
-  eggSoongeoSprite,
-  eggTeoreuteuSprite,
   hubIcon,
   nextQuestChevron,
   roadmapArrow,
