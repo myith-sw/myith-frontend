@@ -164,15 +164,17 @@ function CharacterSidebar({
 function ErrorRoute() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const goHome = () => navigate(user ? '/' : '/login')
 
   return (
     <ErrorPage
+      onHome={goHome}
       sidebar={
         user ? (
-          <CharacterSidebar onHome={() => navigate('/')} />
+          <CharacterSidebar onHome={goHome} />
         ) : (
           <Sidebar
-            onHome={() => navigate('/')}
+            onHome={goHome}
             onLogin={() => navigate('/login')}
             variant="unauthenticated"
           />
