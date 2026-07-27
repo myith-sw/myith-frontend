@@ -9,7 +9,6 @@ const experiences: ArchiveExperienceEntry[] = [
     axisCode: 'programming',
     category: '프로그래밍 기초',
     level: 1,
-    levelLabel: '입문 단계',
     title: '입문 경험',
     entries: [
       ['S', '입문 상황'],
@@ -23,7 +22,6 @@ const experiences: ArchiveExperienceEntry[] = [
     axisCode: 'database',
     category: '데이터베이스',
     level: 2,
-    levelLabel: '견습 단계',
     title: '견습 경험',
     entries: [
       ['S', '견습 상황'],
@@ -83,7 +81,6 @@ describe('ArchivePage experience cards', () => {
     renderArchive(vi.fn(), [
       {
         level: 1,
-        label: '',
         skills: [
           { category: '프로그래밍 기초', status: 'complete', title: '완료 스킬' },
           { category: '프로그래밍 기초', status: 'incomplete', title: '진행 스킬' },
@@ -99,6 +96,7 @@ describe('ArchivePage experience cards', () => {
     expect(completed).toHaveClass('border-[#c8eeed]', 'bg-[rgba(215,255,254,0.4)]')
     expect(incomplete).toHaveClass('border-[#ffe3aa]', 'bg-[#faf4e7]')
     expect(locked).toHaveClass('border-transparent', 'bg-[#f6f6f6]', 'text-black/50')
+    expect(screen.getAllByText('Stage 1').length).toBeGreaterThan(0)
   })
 
   it('스킬 트리의 열린 퀘스트를 클릭하면 해당 퀘스트로 이동한다', () => {
@@ -106,7 +104,6 @@ describe('ArchivePage experience cards', () => {
     renderArchive(onOpenQuest, [
       {
         level: 1,
-        label: '',
         skills: [
           { questId: 'qst_open', category: '프로그래밍 기초', status: 'incomplete', title: '열린 스킬' },
           { questId: 'qst_locked', category: '프로그래밍 기초', status: 'locked', title: '잠긴 스킬' },
@@ -119,7 +116,7 @@ describe('ArchivePage experience cards', () => {
     expect(screen.getByRole('button', { name: '잠긴 스킬 (잠김)' })).toBeDisabled()
   })
 
-  it('경험 카드에 레벨과 역량 칩을 표시하고 레벨 누락 데이터는 분야 칩만 표시한다', () => {
+  it('경험 카드에 Stage와 역량 칩을 표시하고 레벨 누락 데이터는 분야 칩만 표시한다', () => {
     renderArchive()
 
     expect(screen.getByText('백엔드 개발자 · Lv.2 · 완료 2개 · 진행률 25%')).toBeInTheDocument()
@@ -127,13 +124,13 @@ describe('ArchivePage experience cards', () => {
 
     const levelOneCard = screen.getByRole('heading', { name: '입문 경험' }).closest('article')
     expect(levelOneCard).not.toBeNull()
-    expect(within(levelOneCard!).getByText('Lv.1 입문 단계')).toBeInTheDocument()
+    expect(within(levelOneCard!).getByText('Stage 1')).toBeInTheDocument()
     expect(within(levelOneCard!).getByText('프로그래밍 기초')).toBeInTheDocument()
 
     const unknownLevelCard = screen.getByRole('heading', { name: '레벨 정보 없는 경험' }).closest('article')
     expect(unknownLevelCard).not.toBeNull()
     expect(within(unknownLevelCard!).getByText('서버·API')).toBeInTheDocument()
-    expect(within(unknownLevelCard!).queryByText(/^Lv\./)).not.toBeInTheDocument()
+    expect(within(unknownLevelCard!).queryByText(/^Stage /)).not.toBeInTheDocument()
   })
 
   it('전체와 역량 필터를 axisCode 기준으로 전환하고 빈 역량을 안내한다', () => {

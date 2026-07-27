@@ -11,7 +11,6 @@ export interface ArchiveSkill {
 
 export interface ArchiveSkillGroup {
   level: number
-  label: string
   skills: ArchiveSkill[]
 }
 
@@ -41,7 +40,6 @@ export interface ArchiveExperienceEntry {
   axisCode?: string
   category: string
   level?: number
-  levelLabel?: string
   title: string
   entries: [string, string][]
 }
@@ -73,13 +71,6 @@ export function resolveArchiveExperienceAxes(
         .map((axis) => [axis.code, axis] as const),
     ).values(),
   )
-}
-
-export const archiveLevelLabels: Record<number, string> = {
-  1: '입문 단계',
-  2: '견습 단계',
-  3: '성장 단계',
-  4: '전설 단계',
 }
 
 export interface CompetencyMetric {
@@ -147,7 +138,6 @@ export function assessmentToCompetencyScores(answers: Record<string, AssessmentL
 export const archiveSkillGroups: ArchiveSkillGroup[] = [
   {
     level: 1,
-    label: '입문 단계',
     skills: [
       { category: '프로그래밍 기초', status: 'complete', title: '개발환경을 구축할 수 있다' },
       { category: '프로그래밍 기초', status: 'complete', title: '언어 기초로 토이앱을 만든다' },
@@ -155,7 +145,6 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
   },
   {
     level: 2,
-    label: '견습 단계',
     skills: [
       { category: 'CS·자료구조', status: 'complete', title: '자료구조·알고리즘 기초를 안다' },
       { category: '데이터베이스', status: 'complete', title: '데이터베이스를 다룰 수 있다' },
@@ -164,7 +153,6 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
   },
   {
     level: 3,
-    label: '성장 단계',
     skills: [
       { category: '서버·API', status: 'complete', title: 'REST API 서버를 구현한다' },
       { category: '서버·API', status: 'complete', title: '인증·보안 기초를 적용한다' },
@@ -173,7 +161,6 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
   },
   {
     level: 4,
-    label: '전설 단계',
     skills: [
       { category: '배포·운영', status: 'incomplete', title: '서비스를 배포해본다' },
       { category: '배포·운영', status: 'incomplete', title: '컨테이너·CI를 맛본다' },
@@ -181,7 +168,6 @@ export const archiveSkillGroups: ArchiveSkillGroup[] = [
   },
   {
     level: 5,
-    label: '',
     skills: [{ category: 'CS·자료구조', status: 'locked', title: 'CS 면접 질문을 정리한다' }],
   },
 ]
@@ -191,7 +177,6 @@ export const experienceEntries: ArchiveExperienceEntry[] = [
     axisCode: 'programming',
     category: '프로그래밍 기초',
     level: 1,
-    levelLabel: archiveLevelLabels[1],
     title: '언어 기초로 토이앱을 만든다',
     entries: [
       ['S', '언어 문법은 봤지만 직접 만들어본 적이 없어 감이 없었다.'],
@@ -204,7 +189,6 @@ export const experienceEntries: ArchiveExperienceEntry[] = [
     axisCode: 'programming',
     category: '프로그래밍 기초',
     level: 1,
-    levelLabel: archiveLevelLabels[1],
     title: '언어 기초로 토이앱을 만든다',
     entries: [
       ['S', '언어 문법은 봤지만 직접 만들어본 적이 없어 감이 없었다.'],

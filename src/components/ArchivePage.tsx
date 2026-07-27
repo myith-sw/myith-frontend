@@ -88,9 +88,9 @@ function ExperienceCard({
   return (
     <article className="relative h-[277px] overflow-hidden rounded-[20px] bg-white px-[30px] pt-[21px]">
       <div className="flex items-center gap-2">
-        {entry.level !== undefined && entry.levelLabel && (
+        {entry.level !== undefined && (
           <span className="inline-flex rounded-[20px] bg-[#f8f8f8] px-2.5 py-[5px] text-xs font-semibold tracking-[-0.36px] text-[#878787]">
-            Lv.{entry.level} {entry.levelLabel}
+            Stage {entry.level}
           </span>
         )}
         <span className="inline-flex rounded-[20px] bg-[#f8f8f8] px-2.5 py-[5px] text-xs font-semibold tracking-[-0.36px] text-[#878787]">
@@ -236,7 +236,7 @@ export function ArchivePage({
                 <section className="flex flex-col gap-4" key={group.level}>
                   <div className="flex items-center gap-[13px]">
                     <span className="text-sm font-semibold tracking-[-0.28px] opacity-50">
-                      Lv.{group.level}{group.label ? ` ${group.label}` : ''}
+                      Stage {group.level}
                     </span>
                     <span className="h-px flex-1 bg-[#e5e5e5]" />
                   </div>

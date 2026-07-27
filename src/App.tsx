@@ -46,7 +46,6 @@ import { RoadmapPage } from './components/RoadmapPage'
 import { SelfAssessment } from './components/SelfAssessment'
 import { Sidebar } from './components/Sidebar'
 import {
-  archiveLevelLabels,
   resolveArchiveExperienceAxes,
   type ArchiveCharacter,
   type ArchiveExperienceAxis,
@@ -800,7 +799,6 @@ function ArchiveRoute() {
     : null
   const skillGroups: ArchiveSkillGroup[] = (data?.skillTree ?? []).map((group) => ({
     level: group.level ?? 1,
-    label: archiveLevelLabels[group.level ?? 1] ?? '',
     skills: (group.quests ?? []).map((quest) => ({
       questId: quest.questId,
       category: quest.axisName ?? '',
@@ -825,7 +823,6 @@ function ArchiveRoute() {
       axisCode: entry.axisCode,
       category: entry.axisName ?? '',
       level,
-      levelLabel: level === undefined ? undefined : archiveLevelLabels[level],
       title: entry.title ?? '',
       entries: [
         ['S', entry.star?.situation ?? ''],
