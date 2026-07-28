@@ -116,14 +116,14 @@ export function Sidebar({
                           }}
                           type="button"
                         >
-                          <div className="flex w-[105px] flex-col gap-1">
-                            <span className="text-[15px] font-semibold leading-none">{character.title}</span>
-                            <span className="text-xs font-semibold tracking-[0.48px] opacity-50">
+                          <div className="flex min-w-0 flex-1 flex-col gap-1 pr-2">
+                            <span className="truncate text-[15px] font-semibold leading-none">{character.title}</span>
+                            <span className="truncate whitespace-nowrap text-xs font-semibold tracking-[0.48px] opacity-50">
                               {character.role}
                             </span>
                           </div>
                           <span
-                            className={`rounded-[8px] px-[6px] py-1 text-[10px] font-semibold ${
+                            className={`shrink-0 rounded-[8px] px-[6px] py-1 text-[10px] font-semibold ${
                               isSelected ? 'bg-[#7dcecb] text-white' : 'bg-[#efefef]'
                             }`}
                           >

@@ -38,6 +38,27 @@ describe('Sidebar character spacing', () => {
     expect(characterRole).toHaveClass('text-xs', 'tracking-[0.48px]', 'font-semibold')
   })
 
+  it('gives the character role the remaining horizontal card space without wrapping', () => {
+    render(
+      <Sidebar
+        characters={[
+          {
+            id: 'rmp_1',
+            role: '아주 긴 이름의 프로덕트 마케팅 매니저',
+            stage: 1,
+            title: '테스트 캐릭터',
+          },
+        ]}
+      />,
+    )
+
+    const role = screen.getByText('아주 긴 이름의 프로덕트 마케팅 매니저')
+    const textArea = role.parentElement
+
+    expect(textArea).toHaveClass('flex-1', 'min-w-0', 'pr-2')
+    expect(role).toHaveClass('truncate', 'whitespace-nowrap')
+  })
+
   it('uses the larger Figma profile logout popup metrics', () => {
     render(<Sidebar profile={{ email: 'tester@myith.test', name: '테스터' }} />)
 
