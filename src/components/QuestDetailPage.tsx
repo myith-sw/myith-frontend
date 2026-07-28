@@ -52,6 +52,7 @@ export function QuestDetailPage({
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
   const [completionRetryRequired, setCompletionRetryRequired] = useState(false)
+  const [pendingAiEnhancementId, setPendingAiEnhancementId] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState('')
   const starRef = useRef(starRecord)
@@ -70,6 +71,7 @@ export function QuestDetailPage({
     setCompletionResult(null)
     setIsCompletionModalOpen(false)
     setCompletionRetryRequired(false)
+    setPendingAiEnhancementId(null)
   }, [quest])
 
   useEffect(() => {
@@ -98,6 +100,7 @@ export function QuestDetailPage({
         setStatus(result.status)
         setPersistedStar(submittedRecord)
         setHasPersistedStar(true)
+        setPendingAiEnhancementId(null)
         setSaveState(recordsMatch(starRef.current, submittedRecord) ? 'saved' : 'idle')
       })
       .catch((nextError: unknown) => {
@@ -113,7 +116,6 @@ export function QuestDetailPage({
   }, [isLocked, quest.questId])
 
   const requestEnhancement = useCallback(async (signal: AbortSignal) => {
-    await saveNow()
     if (!quest.questId) throw new Error('퀘스트 ID가 없습니다.')
     const accepted = await requestAiEnhancement(quest.questId, {
       star: starRef.current,
@@ -128,7 +130,7 @@ export function QuestDetailPage({
       failed: result.status === 'FAILED',
       record: normalizeStar(result.enhancedStar),
     }
-  }, [quest.questId, saveNow])
+  }, [quest.questId])
 
   const canComplete = !isLocked && starFields.every(({ id }) => starRecord[id].trim())
   const canEnhance = !isLocked && (hasPersistedStar || canComplete)
@@ -147,7 +149,10 @@ export function QuestDetailPage({
     let attemptedCompletion = false
     try {
       if (!hasPersistedStar || isDirty) {
-        await saveNow()
+        await saveNow(
+          pendingAiEnhancementId ? 'ai-assisted' : 'manual',
+          pendingAiEnhancementId ?? undefined,
+        )
       }
       if (!hasPersistedStar || completionRetryRequired) {
         attemptedCompletion = true
@@ -239,6 +244,7 @@ export function QuestDetailPage({
                   starRef.current = next
                   setStarRecord(next)
                   setSaveState('idle')
+                  setPendingAiEnhancementId(null)
                 }}
                 placeholder={field.placeholder}
                 value={starRecord[field.id]}
@@ -286,8 +292,8 @@ export function QuestDetailPage({
           starRef.current = record
           setStarRecord(record)
           setSaveState('idle')
+          setPendingAiEnhancementId(enhancementId)
           setIsAiModalOpen(false)
-          void saveNow('ai-assisted', enhancementId)
         }}
         onClose={() => setIsAiModalOpen(false)}
         open={isAiModalOpen}

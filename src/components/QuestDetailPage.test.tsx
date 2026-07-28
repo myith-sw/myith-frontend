@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { completeQuest, saveStar } from '../api/endpoints'
+import { completeQuest, pollAiEnhancement, requestAiEnhancement, saveStar } from '../api/endpoints'
 import type { QuestDetail } from '../api/types'
 import { QuestDetailPage } from './QuestDetailPage'
 
@@ -328,5 +328,57 @@ describe('QuestDetailPage STAR action', () => {
     })
     expect(completeQuest).not.toHaveBeenCalled()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('AI 보완 결과 수락은 입력값만 바꾸고 저장 요청을 보내지 않는다', async () => {
+    const matchMediaDescriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia')
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn().mockReturnValue({ matches: true }),
+    })
+
+    try {
+      vi.mocked(requestAiEnhancement).mockResolvedValue({ requestId: 'aie_1' })
+      vi.mocked(pollAiEnhancement).mockResolvedValue({
+        requestId: 'aie_1',
+        status: 'COMPLETED',
+        enhancedStar: {
+          situation: 'AI 보완 상황',
+          task: 'AI 보완 과제',
+          action: 'AI 보완 행동',
+          result: 'AI 보완 결과',
+        },
+      })
+      render(
+        <QuestDetailPage
+          onBack={vi.fn()}
+          quest={{
+            ...baseQuest,
+            status: 'DONE',
+            star: {
+              situation: '기존 상황',
+              task: '기존 과제',
+              action: '기존 행동',
+              result: '기존 결과',
+            },
+          }}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'AI로 강화하기' }))
+      const applyButton = await screen.findByRole('button', { name: 'AI 보완 내용으로 적용하기' })
+      await vi.waitFor(() => expect(applyButton).toBeEnabled())
+      fireEvent.click(applyButton)
+
+      expect(saveStar).not.toHaveBeenCalled()
+      expect(screen.getByLabelText(/상황 \(Situation\)/)).toHaveValue('AI 보완 상황')
+      expect(screen.getByRole('button', { name: '수정하기' })).toBeEnabled()
+    } finally {
+      if (matchMediaDescriptor) {
+        Object.defineProperty(window, 'matchMedia', matchMediaDescriptor)
+      } else {
+        delete (window as Partial<typeof window>).matchMedia
+      }
+    }
   })
 })
