@@ -9,7 +9,6 @@ import { ProjectExperienceCard } from './ProjectExperienceCard'
 
 interface SelfAssessmentProps {
   error?: string
-  progressMessage?: string
   submitting?: boolean
   levels: AssessmentOption[]
   questions: AssessmentQuestion[]
@@ -28,7 +27,6 @@ interface SelfAssessmentProps {
 
 export function SelfAssessment({
   error,
-  progressMessage,
   submitting = false,
   levels,
   questions,
@@ -118,11 +116,10 @@ export function SelfAssessment({
           onClick={onGenerateRoadmap}
           type="button"
         >
-          {submitting ? '로드맵 생성 중…' : '로드맵 생성'}
+          로드맵 생성
           <img alt="" aria-hidden="true" className="h-[10px] w-[11.6px]" src={homeAssets.ctaArrow} />
         </button>
       </div>
-      {progressMessage && <p className="mt-4 text-right text-sm font-medium text-[#58a9a3]" role="status">{progressMessage}</p>}
       {error && <p className="mt-3 text-right text-sm font-medium text-[#d65454]" role="alert">{error}</p>}
     </section>
   )

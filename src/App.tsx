@@ -43,6 +43,7 @@ import { JobSelection } from './components/JobSelection'
 import { MythHub } from './components/MythHub'
 import { QuestDetailPage } from './components/QuestDetailPage'
 import { RoadmapPage } from './components/RoadmapPage'
+import { RoadmapGenerationLoadingModal } from './components/RoadmapGenerationLoadingModal'
 import { SelfAssessment } from './components/SelfAssessment'
 import { Sidebar } from './components/Sidebar'
 import {
@@ -375,7 +376,6 @@ function AssessmentRoute() {
   const [loading, setLoading] = useState(!onboarding.diagnosis)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [progressMessage, setProgressMessage] = useState('')
   const selectedJob = onboarding.selectedJob
 
   useEffect(() => {
@@ -430,7 +430,6 @@ function AssessmentRoute() {
 
     setSubmitting(true)
     setError('')
-    setProgressMessage('첨부 자료를 준비하고 있어요…')
     try {
       const evidence = prepareRoadmapEvidence(onboarding.projectExperiences)
       const fileKey = evidence.file
@@ -456,13 +455,16 @@ function AssessmentRoute() {
       if (!result.roadmapId) throw new Error('생성된 로드맵 ID가 없습니다.')
 
       if (result.generationState === 'ANALYZING') {
-        setProgressMessage('프로젝트 경험을 분석하고 있어요…')
+        let generationError: Error | undefined
         try {
           await subscribeRoadmapProgress(result.roadmapId, (event) => {
-            if (event.type === 'progress') setProgressMessage(`${event.step} ${event.percent}%`)
-            if (event.type === 'error') setError(event.message)
+            if (event.type === 'error') {
+              generationError = new Error(event.message)
+              throw generationError
+            }
           })
         } catch {
+          if (generationError) throw generationError
           const recovered = await getRoadmap(result.roadmapId)
           if (recovered.generationState !== 'READY') throw new Error('분석 상태를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.')
         }
@@ -517,12 +519,12 @@ function AssessmentRoute() {
                   : current.projectExperiences,
             }))
           }
-          progressMessage={progressMessage}
           projectExperiences={onboarding.projectExperiences}
           questions={questions}
           submitting={submitting}
         />
       )}
+      <RoadmapGenerationLoadingModal open={submitting} />
     </AppShell>
   )
 }
