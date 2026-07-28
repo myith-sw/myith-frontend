@@ -106,7 +106,7 @@ function toMythCharacter(character: CharacterSummary): MythCharacter {
 }
 
 function toArchiveSkillStatus(status: string | undefined): ArchiveSkillStatus {
-  if (status === 'DONE' || status === 'ALREADY_KNOWN') return 'complete'
+  if (status === 'DONE') return 'complete'
   if (status === 'LOCKED') return 'locked'
   return 'incomplete'
 }

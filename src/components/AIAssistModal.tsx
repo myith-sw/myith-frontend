@@ -10,7 +10,11 @@ interface AIAssistModalProps {
   onClose: () => void
   open: boolean
   originalRecord: StarRecord
-  requestEnhancement: (signal: AbortSignal) => Promise<{ enhancementId: string; record: StarRecord }>
+  requestEnhancement: (signal: AbortSignal) => Promise<{
+    enhancementId: string
+    failed: boolean
+    record: StarRecord
+  }>
 }
 
 type GenerationStatus = 'generating' | 'revealing' | 'ready' | 'failed'
@@ -50,11 +54,15 @@ export function AIAssistModal({
     setStatus('generating')
 
     requestEnhancement(controller.signal)
-      .then(({ enhancementId: nextEnhancementId, record }) => {
+      .then(({ enhancementId: nextEnhancementId, failed, record }) => {
         if (controller.signal.aborted) return
 
         setEnhancedRecord(record)
         setEnhancementId(nextEnhancementId)
+        if (failed) {
+          setStatus('failed')
+          return
+        }
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           setStatus('ready')
           return
@@ -197,7 +205,11 @@ export function AIAssistModal({
                   <span className="absolute right-3 top-2 rounded-full bg-[#eee3ff] px-2 py-0.5 text-[9px] font-semibold text-[#8d45f5]">
                     AI 보완
                   </span>
-                  {status === 'failed' ? (
+                  {status === 'failed' && enhancedRecord ? (
+                    <p className="min-w-0 pr-12 pt-3 text-[#d65454]" role="alert">
+                      {enhancedRecord[row.id]}
+                    </p>
+                  ) : status === 'failed' ? (
                     <p className="text-[#d65454]" role="alert">AI 보완에 실패했습니다. 닫은 뒤 다시 시도해주세요.</p>
                   ) : status === 'generating' || !enhancedRecord ? (
                     <GeneratingResult />

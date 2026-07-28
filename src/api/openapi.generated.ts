@@ -378,7 +378,7 @@ export interface paths {
         /**
          * STAR 기록 저장 (임시 저장)
          * @description 각 필드 trim 후 0~2000자. 임시 저장이므로 빈 값을 허용한다.
-         *     최초 저장 시 퀘스트 상태가 OPEN → PENDING으로 바뀐다.
+         *     STAR를 저장해도 퀘스트 상태는 OPEN으로 유지된다.
          *     프론트는 textarea blur 또는 debounce로 호출한다.
          *     AI 제안을 적용해 저장한 경우 source: "ai-assisted" + aiEnhancementId를 채운다.
          */
@@ -405,9 +405,8 @@ export interface paths {
         head?: never;
         /**
          * 퀘스트 완료 토글
-         * @description STAR 본문은 여기서 보내지 않는다. PUT /star로 이미 저장된 값을 쓴다.
+         * @description star는 선택 사항이다. 전달하면 STAR 저장과 완료를 한 번에 처리한다.
          *     응답에 radar를 함께 내려 프론트가 레이더를 재조회 없이 갱신하게 한다.
-         *     409 VERSION_CONFLICT 응답에는 최신 version을 포함해 프론트가 재시도할 수 있게 한다.
          */
         patch: operations["toggleComplete"];
         trace?: never;
@@ -570,7 +569,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {string} */
-        QuestStatus: "LOCKED" | "OPEN" | "PENDING" | "DONE" | "ALREADY_KNOWN";
+        QuestStatus: "LOCKED" | "OPEN" | "DONE" | "ALREADY_KNOWN";
         /** @enum {string} */
         QuestSource: "SKILL" | "ACTIVITY" | "CUSTOM";
         /** @enum {string} */
@@ -891,8 +890,7 @@ export interface components {
         };
         CompleteRequest: {
             completed: boolean;
-            /** Format: int64 */
-            version: number;
+            star?: components["schemas"]["StarInput"];
         };
         CompleteResponse: {
             quest?: {
@@ -2031,7 +2029,7 @@ export interface operations {
                      *           "result": "평균 응답 시간이 200ms로 감소했다."
                      *         },
                      *         "source": "manual",
-                     *         "status": "PENDING",
+                     *         "status": "OPEN",
                      *         "updatedAt": "2026-07-24T03:10:00Z"
                      *       }
                      *     }
@@ -2148,7 +2146,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description VERSION_CONFLICT / QUEST_LOCKED */
+            /** @description QUEST_LOCKED */
             409: {
                 headers: {
                     [name: string]: unknown;

@@ -1,7 +1,7 @@
 export type RoadmapQuestStatus = 'complete' | 'incomplete' | 'locked'
 
 export function toRoadmapQuestStatus(status: string | undefined): RoadmapQuestStatus {
-  if (status === 'DONE' || status === 'ALREADY_KNOWN') return 'complete'
+  if (status === 'DONE') return 'complete'
   if (status === 'LOCKED') return 'locked'
   return 'incomplete'
 }

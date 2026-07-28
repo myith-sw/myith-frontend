@@ -66,7 +66,6 @@ type AssessmentLevel =
 type QuestStatus =
   | 'LOCKED'
   | 'OPEN'
-  | 'PENDING'
   | 'DONE'
   | 'ALREADY_KNOWN'
 
@@ -91,8 +90,8 @@ type AiEnhancementStatus =
 
 - `completionRate = (DONE + ALREADY_KNOWN 퀘스트 수) / 전체 퀘스트 수 × 100`
 - 역량별 `percent = 해당 axis의 (DONE + ALREADY_KNOWN) / 해당 axis 전체 퀘스트 × 100`
-- `currentLevel`은 `PENDING` 또는 `OPEN`인 첫 퀘스트의 `level`이다. 모두 완료된 경우 가장 높은 레벨이다.
-- `nextQuest`는 `PENDING`을 우선하고, 없으면 `OPEN` 중 `level`, `order`가 가장 앞선 퀘스트다.
+- `currentLevel`은 `OPEN`인 첫 퀘스트의 `level`이다. 모두 완료된 경우 가장 높은 레벨이다.
+- `nextQuest`는 `OPEN` 중 `level`, `order`가 가장 앞선 퀘스트다.
 - 캐릭터 `stage`는 퀘스트 `level`과 별개의 값이다.
 
 | 완료율 | stage | stageLabel |
@@ -727,7 +726,6 @@ Notion 데이터베이스의 한 행에 해당하는 목록이다. 각 API의 �
 
 ```json
 {
-  "version": 3,
   "star": {
     "situation": "CS 면접 준비를 시작했지만 개념을 구조적으로 설명하기 어려웠다.",
     "task": "자주 나오는 질문을 주제별로 정리하기로 했다.",
@@ -741,7 +739,6 @@ Notion 데이터베이스의 한 행에 해당하는 목록이다. 각 API의 �
 
 | key | 필수 | 검증 |
 | --- | --- | --- |
-| `version` | O | 상세 조회 또는 직전 저장 응답의 최신 버전 |
 | `star.*` | O | 각 항목 trim 후 0~2000자 |
 | `source` | O | `manual` 또는 `ai-assisted` |
 | `aiEnhancementId` | 조건부 | `ai-assisted`일 때 필수 |
@@ -752,7 +749,6 @@ Notion 데이터베이스의 한 행에 해당하는 목록이다. 각 API의 �
 {
   "data": {
     "questId": "quest_cs_interview",
-    "version": 4,
     "star": {
       "situation": "CS 면접 준비를 시작했지만 개념을 구조적으로 설명하기 어려웠다.",
       "task": "자주 나오는 질문을 주제별로 정리하기로 했다.",
@@ -761,13 +757,13 @@ Notion 데이터베이스의 한 행에 해당하는 목록이다. 각 API의 �
     },
     "starSource": "manual",
     "aiEnhancementId": null,
-    "status": "PENDING",
+    "status": "OPEN",
     "updatedAt": "2026-07-25T01:10:00Z"
   }
 }
 ```
 
-모든 칸이 비어 있으면 상태를 `OPEN`으로 유지할 수 있다. 한 칸이라도 값이 있으면 `PENDING`으로 전환한다.
+STAR를 저장해도 퀘스트 상태는 `OPEN`으로 유지한다.
 
 ### Error Responses
 
@@ -775,9 +771,6 @@ Notion 데이터베이스의 한 행에 해당하는 목록이다. 각 API의 �
 | --- | --- | --- |
 | 400 | `VALIDATION_ERROR` | 길이·source 형식 오류 |
 | 409 | `QUEST_LOCKED` | 잠긴 퀘스트 수정 시도 |
-| 409 | `VERSION_CONFLICT` | 다른 요청이 먼저 저장됨 |
-
-`VERSION_CONFLICT`의 `error.latestData`에 최신 `version`과 `star`를 포함한다.
 
 ---
 
@@ -814,22 +807,18 @@ STAR 최종본 저장, 퀘스트 완료, 경험 카드 snapshot 생성, 역량·
 | 위치 | key | 필수 | 설명 |
 | --- | --- | --- | --- |
 | header | `Idempotency-Key` | 권장 | 완료 버튼 중복 클릭 방지 |
-| body | `version` | O | 최신 퀘스트 버전 |
-| body | `star` | O | 네 필드 모두 값 필요 |
-| body | `source` | O | 기록 출처 |
-| body | `aiEnhancementId` | 조건부 | AI 적용 시 필수 |
+| body | `completed` | O | 완료 처리 여부 |
+| body | `star` | 선택 | 네 필드를 전달하면 STAR 저장과 완료를 한 번에 처리 |
 
 ```json
 {
-  "version": 4,
+  "completed": true,
   "star": {
     "situation": "CS 면접 준비 과정에서 핵심 개념을 설명하기 어려웠다.",
     "task": "질문을 주제별로 선별하고 답변을 정리하기로 했다.",
     "action": "정의·원리·활용 사례 순서로 답변을 작성하고 반복해서 설명했다.",
     "result": "핵심 개념을 짧고 논리적으로 설명할 수 있게 되었다."
-  },
-  "source": "ai-assisted",
-  "aiEnhancementId": "enhancement_01J4"
+  }
 }
 ```
 
@@ -874,7 +863,6 @@ STAR 최종본 저장, 퀘스트 완료, 경험 카드 snapshot 생성, 역량·
 | --- | --- | --- |
 | 400 | `STAR_INCOMPLETE` | 네 STAR 항목 중 빈 값 존재 |
 | 409 | `QUEST_LOCKED` | 잠긴 퀘스트 완료 시도 |
-| 409 | `VERSION_CONFLICT` | 최신 버전이 아님 |
 | 422 | `AI_ENHANCEMENT_NOT_FOUND` | 유효하지 않은 AI 결과 ID |
 
 ---
@@ -960,16 +948,16 @@ STAR 최종본 저장, 퀘스트 완료, 경험 카드 snapshot 생성, 역량·
 
 ### 설명
 
-AI 요청의 처리 상태를 폴링한다. `PROCESSING` 중에는 shimmer 또는 파티클 로딩을 유지하고, `COMPLETED`일 때 오른쪽 결과 카드에 `enhancedRecord`를 표시한다.
+AI 요청의 처리 상태를 폴링한다. `PROCESSING` 중에는 shimmer 또는 파티클 로딩을 유지하고, 종료 상태(`COMPLETED` 또는 `FAILED`)에서는 오른쪽 결과 카드에 `enhancedStar`를 표시한다.
 
 ### 화면 데이터 매핑
 
 | API key | 모달 표시 |
 | --- | --- |
 | `status=PROCESSING` | 생성 중 애니메이션 |
-| `result.enhancedRecord.*` | `AI로 보완한 글` S/T/A/R |
-| `status=FAILED` | 오류 안내와 `다시 시도` 버튼 |
-| `result.enhancementId` | 적용 후 STAR 저장 요청에 포함 |
+| `enhancedStar.*` | `AI로 보완한 글` S/T/A/R |
+| `status=FAILED` | `enhancedStar.situation` 오류 안내, 적용 버튼 비활성화 |
+| `requestId` | 적용 후 STAR 저장 요청에 포함 |
 
 ### 요청
 
@@ -984,8 +972,6 @@ AI 요청의 처리 상태를 폴링한다. `PROCESSING` 중에는 shimmer 또�
   "data": {
     "requestId": "ai_request_01J4",
     "status": "PROCESSING",
-    "result": null,
-    "error": null
   }
 }
 ```
@@ -997,18 +983,14 @@ AI 요청의 처리 상태를 폴링한다. `PROCESSING` 중에는 shimmer 또�
   "data": {
     "requestId": "ai_request_01J4",
     "status": "COMPLETED",
-    "result": {
-      "enhancementId": "enhancement_01J4",
-      "questId": "quest_cs_interview",
-      "enhancedRecord": {
-        "situation": "CS 면접 준비 과정에서 네트워크·운영체제·데이터베이스 개념을 공부했지만 핵심을 구조적으로 설명하는 데 어려움을 느꼈다.",
-        "task": "자주 출제되는 질문을 주제별로 선별하고 실제 사례를 포함한 답변을 정리하기로 했다.",
-        "action": "영역별 질문을 수집하고 답변을 정의·원리·활용 사례 순서로 작성한 뒤 반복해서 설명했다.",
-        "result": "핵심 개념을 짧고 논리적으로 설명하고 부족한 영역을 반복 학습할 수 있는 답변 자료를 완성했다."
-      },
-      "createdAt": "2026-07-25T01:25:00Z"
+    "questId": "quest_cs_interview",
+    "enhancedStar": {
+      "situation": "CS 면접 준비 과정에서 네트워크·운영체제·데이터베이스 개념을 공부했지만 핵심을 구조적으로 설명하는 데 어려움을 느꼈다.",
+      "task": "자주 출제되는 질문을 주제별로 선별하고 실제 사례를 포함한 답변을 정리하기로 했다.",
+      "action": "영역별 질문을 수집하고 답변을 정의·원리·활용 사례 순서로 작성한 뒤 반복해서 설명했다.",
+      "result": "핵심 개념을 짧고 논리적으로 설명하고 부족한 영역을 반복 학습할 수 있는 답변 자료를 완성했다."
     },
-    "error": null
+    "createdAt": "2026-07-25T01:25:00Z"
   }
 }
 ```
@@ -1022,11 +1004,14 @@ AI 요청의 처리 상태를 폴링한다. `PROCESSING` 중에는 shimmer 또�
   "data": {
     "requestId": "ai_request_01J4",
     "status": "FAILED",
-    "result": null,
-    "error": {
-      "code": "AI_PROVIDER_TIMEOUT",
-      "message": "AI 응답 시간이 초과되었습니다. 다시 시도해주세요."
-    }
+    "enhancedStar": {
+      "situation": "AI 보완에 실패했습니다. 잠시 후 다시 시도해주세요.",
+      "task": "",
+      "action": "",
+      "result": ""
+    },
+    "feedback": [],
+    "errorCode": "AI_PROVIDER_TIMEOUT"
   }
 }
 ```
@@ -1306,10 +1291,9 @@ Content-Disposition: attachment; filename*=UTF-8''myith-%EA%B2%AC%EC%8A%B5-%EC%8
 | 서버 값 | 현재 프론트 값·처리 |
 | --- | --- |
 | `DONE` | `complete` 카드 스타일 |
-| `PENDING` | `pending` 카드 스타일 |
 | `OPEN` | `open` 카드 스타일 |
 | `LOCKED` | `locked` 카드 스타일 |
-| `ALREADY_KNOWN` | 별도 `이미 보유` 카드 스타일 추가 |
+| `ALREADY_KNOWN` | `OPEN`과 같은 수행 가능 카드 스타일 |
 | `axes[]` | 현재 고정 6축 `CompetencyScores`를 가변 배열 레이더로 변경 |
 | `stageLabel: 시작/성장/숙련/완성` | 기존 입문·견습·전설 문구를 서버 값으로 표시 |
 | `completionRate` | 현재 mock의 `progress`를 대체 |

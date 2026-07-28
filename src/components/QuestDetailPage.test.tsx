@@ -211,7 +211,7 @@ describe('QuestDetailPage STAR action', () => {
   })
 
   it('처음 작성한 STAR는 저장 후 퀘스트를 완료 처리한다', async () => {
-    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'PENDING' })
+    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'OPEN' })
     vi.mocked(completeQuest).mockResolvedValue({
       quest: { questId: 'qst_1', status: 'DONE', version: 2 },
     })
@@ -225,12 +225,12 @@ describe('QuestDetailPage STAR action', () => {
 
     await vi.waitFor(() => {
       expect(saveStar).toHaveBeenCalledOnce()
-      expect(completeQuest).toHaveBeenCalledWith('qst_1', { completed: true, version: 1 })
+      expect(completeQuest).toHaveBeenCalledWith('qst_1', { completed: true })
     })
   })
 
   it('최초 완료 성공 시 최신 진행률을 담은 성공 모달을 표시한다', async () => {
-    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'PENDING' })
+    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'OPEN' })
     vi.mocked(completeQuest).mockResolvedValue({
       characterChanges: { completionRate: 80 },
       quest: { questId: 'qst_1', status: 'DONE', version: 2 },
@@ -254,7 +254,7 @@ describe('QuestDetailPage STAR action', () => {
   it('성공 모달의 확인은 상세에 남고 로드맵으로는 뒤로가기 콜백을 호출한다', async () => {
     const onBack = vi.fn()
     const onUpdated = vi.fn()
-    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'PENDING' })
+    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'OPEN' })
     vi.mocked(completeQuest).mockResolvedValue({
       characterChanges: { completionRate: 80 },
       quest: { questId: 'qst_1', status: 'DONE', version: 2 },
@@ -286,7 +286,7 @@ describe('QuestDetailPage STAR action', () => {
   })
 
   it('최초 완료 요청이 실패하면 성공 모달을 열지 않고 오류를 표시한다', async () => {
-    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'PENDING' })
+    vi.mocked(saveStar).mockResolvedValue({ questId: 'qst_1', status: 'OPEN' })
     vi.mocked(completeQuest).mockRejectedValue(new Error('완료 처리에 실패했습니다.'))
     render(<QuestDetailPage onBack={vi.fn()} quest={baseQuest} />)
 

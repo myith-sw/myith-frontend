@@ -61,7 +61,7 @@ describe('Swagger-compatible endpoints', () => {
     server.use(
       http.patch('http://localhost/api/quests/qst_17/complete', async ({ request }) => {
         expect(request.headers.get('Idempotency-Key')).toBeNull()
-        expect(await request.json()).toEqual({ completed: true, version: 3 })
+        expect(await request.json()).toEqual({ completed: true })
         return HttpResponse.json({
           data: {
             quest: {
@@ -75,7 +75,7 @@ describe('Swagger-compatible endpoints', () => {
     )
 
     await expect(
-      completeQuest('qst_17', { completed: true, version: 3 }),
+      completeQuest('qst_17', { completed: true }),
     ).resolves.toMatchObject({
       quest: { questId: 'qst_17', version: 4 },
     })

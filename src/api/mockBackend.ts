@@ -16,7 +16,7 @@ interface MockQuest {
   axisCode: string
   axisName: string
   title: string
-  status: 'LOCKED' | 'OPEN' | 'PENDING' | 'DONE' | 'ALREADY_KNOWN'
+  status: 'LOCKED' | 'OPEN' | 'DONE' | 'ALREADY_KNOWN'
   source: 'SKILL' | 'ACTIVITY' | 'CUSTOM'
   order: number
   version: number
@@ -76,7 +76,7 @@ function makeQuests(roadmapId: string) {
         quest.status === 'complete'
           ? 'DONE'
           : quest.status === 'incomplete'
-            ? 'PENDING'
+            ? 'OPEN'
             : quest.status === 'locked'
               ? 'LOCKED'
               : 'OPEN',
@@ -439,7 +439,6 @@ export async function mockFetch(input: string, init: RequestInit = {}) {
     const star = body.star ?? {}
     stars.set(found.quest.questId, star)
     found.quest.star = star
-    if (found.quest.status === 'OPEN') found.quest.status = 'PENDING'
     return json({
       data: {
         questId: found.quest.questId,
@@ -455,8 +454,11 @@ export async function mockFetch(input: string, init: RequestInit = {}) {
   if (completeMatch && method === 'PATCH') {
     const found = findQuest(completeMatch[1])
     if (!found) return apiError('NOT_FOUND', '퀘스트를 찾을 수 없습니다.', 404)
-    if (body.version !== found.quest.version) return apiError('VERSION_CONFLICT', '최신 상태를 다시 불러와주세요.', 409)
-    found.quest.status = body.completed ? 'DONE' : 'PENDING'
+    if (body.star) {
+      stars.set(found.quest.questId, body.star)
+      found.quest.star = body.star
+    }
+    found.quest.status = body.completed ? 'DONE' : 'OPEN'
     found.quest.version += 1
     const done = found.roadmap.quests.filter((quest) => ['DONE', 'ALREADY_KNOWN'].includes(quest.status)).length
     found.roadmap.character.completionRate = Math.round((done / found.roadmap.quests.length) * 100)

@@ -76,5 +76,5 @@ access token은 메모리에만 저장하고 refresh token은 탭 수명과 같�
 2. Google 신규 사용자는 온보딩, 기존 사용자는 허브로 이동하는지 확인한다.
 3. PDF Presigned URL 발급과 S3 PUT을 확인한다.
 4. 동기 생성과 `202 ANALYZING` 생성의 fetch SSE를 확인한다.
-5. STAR 임시 저장, AI 결과 적용, 완료 토글, version 충돌을 확인한다.
+5. STAR 임시 저장, AI 결과 적용, 완료 토글을 확인한다.
 6. MD/PDF 응답의 `Content-Disposition` 파일명이 브라우저 다운로드에 반영되는지 확인한다.

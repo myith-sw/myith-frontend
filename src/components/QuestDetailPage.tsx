@@ -47,7 +47,6 @@ export function QuestDetailPage({
   const [persistedStar, setPersistedStar] = useState<StarRecord>(() => normalizeStar(quest.star))
   const [hasPersistedStar, setHasPersistedStar] = useState(() => hasWrittenStar(normalizeStar(quest.star)))
   const [status, setStatus] = useState(quest.status)
-  const [version, setVersion] = useState(quest.version ?? 0)
   const [isAiModalOpen, setIsAiModalOpen] = useState(false)
   const [completionResult, setCompletionResult] = useState<CompleteResponse | null>(null)
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
@@ -67,7 +66,6 @@ export function QuestDetailPage({
     setPersistedStar(next)
     setHasPersistedStar(hasWrittenStar(next))
     setStatus(quest.status)
-    setVersion(quest.version ?? 0)
     setSaveState('idle')
     setCompletionResult(null)
     setIsCompletionModalOpen(false)
@@ -124,10 +122,10 @@ export function QuestDetailPage({
     })
     if (!accepted.requestId) throw new Error('AI 요청 ID를 받지 못했습니다.')
     const result = await pollAiEnhancement(accepted.requestId, signal)
-    if (result.status === 'FAILED') throw new Error(result.errorCode ?? 'AI 보완에 실패했습니다.')
     if (!result.enhancedStar) throw new Error('AI 보완 결과가 비어 있습니다.')
     return {
       enhancementId: accepted.requestId,
+      failed: result.status === 'FAILED',
       record: normalizeStar(result.enhancedStar),
     }
   }, [quest.questId, saveNow])
@@ -155,10 +153,9 @@ export function QuestDetailPage({
         attemptedCompletion = true
         const result = await completeQuest(
           quest.questId,
-          { completed: true, version },
+          { completed: true },
         )
         setStatus(result.quest?.status)
-        setVersion(result.quest?.version ?? version + 1)
         setCompletionResult(result)
         setCompletionRetryRequired(false)
         setIsCompletionModalOpen(true)
